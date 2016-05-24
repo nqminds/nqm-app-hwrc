@@ -1,0 +1,39 @@
+extends ./layout.pug
+
+block rightNavMenu
+  li
+    a(href=nidModeToggle.url) #{nidModeToggle.text}                 
+
+block rightNavMenuMobile
+  li
+    a(href=nidModeToggle.url) #{nidModeToggle.text}                 
+
+block content
+  script.
+    $(function() {
+      $(".aggregateRow").click(function() {
+        alert("clicked row " + this.dataset.field);
+      });
+    });
+
+  div.row
+    div.col.s12    
+      table.bordered.highlight
+        thead
+          tr          
+            //- Add a header for each column.
+            each column in columns
+              th(data-field=column.key)
+                a(href=column.sortURL) #{column.title} 
+                  i.right.material-icons #{column.sortIcon}
+        tbody            
+          //- Add a row for each data item.        
+          each row in data
+            tr.aggregateRow(data-field=row.__idx)
+              //- Within the row, add a cell for each column heading. 
+              each column in columns
+                //- Use Array.reduce to lookup the json path, e.g. evaluate row["_id.SID"]  
+                td= column.key.split(".").reduce(function(obj, key) { return obj[key] }, row)
+        
+    
+  

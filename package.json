@@ -1,0 +1,20 @@
+{
+  "name": "waste-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "debug": "^2.2.0",
+    "express": "^4.13.4",
+    "lodash": "^4.13.0",
+    "minimist": "^1.2.0",
+    "nqm-utils": "0.0.7",
+    "pug": "^0.1.0",
+    "request": "^2.72.0"
+  }
+}
