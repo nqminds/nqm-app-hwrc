@@ -24,6 +24,11 @@ var oCheck = [
     {id: "#delta_cost-box", key:"Delta_Cost", type: "sum"}
 ];
 
+var oMapOptions = [
+    {id: "#sid_map_select", key: "SID"},
+    {id: "#nid_map_select", key: "NID"}
+];
+
 
 // ********************* read url
 
@@ -42,14 +47,15 @@ var next_select = function(options_index, oOptions, callback){
     if(options_index < oOptions.length){
         populate_select(options_index, oOptions, function(options_index, oOptions){
             options_index ++;
-            next_select(options_index, oOptions, function(res){})
+            next_select(options_index, oOptions, callback)
         })
     } else {
-        //$('select').material_select();
-        populate_filter_form2(oOptions);
-        //call back does not work??
+
         callback("done")
+
     }
+
+
 };
 
 
@@ -72,8 +78,7 @@ var populate_filter_form1 = function(){
     //populate options
 
     next_select(0, oOptions, function(res){
-        console.log("worked")
-
+        populate_filter_form2(oOptions)
     });
 };
 
@@ -258,7 +263,26 @@ var generate_url = function(){
 
     url += ']';
 
+    //console.log(url)
+
     window.open(url,"_self")
 
+};
+
+
+var populate_map_form = function(){
+
+    //populate options
+
+    next_select(0, oMapOptions, function(res){
+
+        get_district_data(function(districtData){
+            get_hwrc_data(function(poiData){
+                ee.emitEvent("update_map", [districtData, poiData]);
+            })
+        })
+
+
+    });
 };
 

@@ -9,13 +9,25 @@ html
     meta(name="viewport", content="width=device-width, initial-scale=1.0")
     // Import app styles.
     link(href="/styles.css",type="text/css",rel="stylesheet")    
-    block title 
+    link(href="/widgets.css",type="text/css",rel="stylesheet")
+    block title
       title HWRC Planning
   body
     script(type="text/javascript", src="https://code.jquery.com/jquery-2.1.1.min.js")
     script(type="text/javascript", src="/materialize-css/js/materialize.min.js")
 
+    script(type='text/javascript', src='/js/EventEmitter-VERSION.min.js')
+
+
+
+    script(src="http://d3js.org/d3.v3.min.js")
+    script(src= "http://d3js.org/topojson.v1.min.js")
+
+    script(src="/js/CheckList.js")
     script(src="/js/filter.js")
+    script(src="/js/d3-components.js")
+    script(src="/js/widgets.js")
+    script(src="/js/initMap.js")
 
     script.
       $(function() {

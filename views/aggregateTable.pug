@@ -18,14 +18,26 @@ block content
 
     $(document).ready(function () {
 
-      populate_filter_form1();
-
-      $('select').material_select();
-
       $('#filter_form').on('submit', function (res) {
+        console.log("submit")
         generate_url();
         return false;
       });
+
+      populate_filter_form1();
+      populate_map_form();
+
+      $("#map_form").change(function () {
+        get_district_data(function(districtData){
+          get_hwrc_data(function(poiData){
+            ee.emitEvent("update_map", [districtData, poiData]);
+          })
+        })
+      });
+
+
+
+      $('select').material_select();
 
     });
 
@@ -35,45 +47,79 @@ block content
     ul.collapsible(data-collapsible='accordion')
       li
         .collapsible-header
+          i.material-icons place
+          | map
+        .collapsible-body
+          .row
+          .row
+            form.col.s12#map_form
+              .row
+                .input-field.col.s2
+                  select#sid_map_select
+                    //option(value='', disabled='', selected='') Choose year
+                  label SID
+                .input-field.col.s2
+                  select#nid_map_select
+                    //option(value='', disabled='', selected='') Choose network
+                  label NID
+              .row
+                .col.s1
+                  input#tonnage_map_radio(name='map_data_group',value='Tonnage', type='radio')
+                  label(for='tonnage_map_radio') tonnage
+                .col.s1
+                  input#delta_tonnage_map_radio(name='map_data_group', value='Delta_Tonnage', type='radio')
+                  label(for='delta_tonnage_map_radio') delta tonnage
+                .col.s1
+                  input#cost_map_radio(name='map_data_group', value='Cost', type='radio', checked='true')
+                  label(for='cost_map_radio') cost
+                .col.s1
+                  input#delta_cost_map_radio(name='map_data_group', value='Delta_Cost',type='radio')
+                  label(for='delta_cost_map_radio') delta cost
+
+          .row
+            div#mapContainer
+
+
+      li
+        .collapsible-header
           i.material-icons filter_list
           | filter
         .collapsible-body
 
           .row
             form.col.s12#filter_form
-
+              .row
               .row Dataset:
               .row
-                .input-field.col.s4
+                .input-field.col.s2
                   input#dataset_id.validate(value='SkgFcSoEX', type='text')
                   label(for='dataset_id') dataset Id
 
               .row Filters:
               .row
-                .input-field.col.s4
+                .input-field.col.s2
                   select(multiple='')#sid_select
-                    option(value='', disabled='', selected='') Choose your year
+                    option(value='', disabled='', selected='') Choose year
                   label SID
-                .input-field.col.s4
+                .input-field.col.s2
                   select(multiple='')#nid_select
-                    option(value='', disabled='', selected='') Choose your network
+                    option(value='', disabled='', selected='') Choose network
                   label NID
-                .input-field.col.s4
+                .input-field.col.s2
                   select(multiple='')#hwrc_select
-                    option(value='', disabled='', selected='') Choose your hwrc
+                    option(value='', disabled='', selected='') Choose hwrc
                   label HWRC
-              .row
-                .input-field.col.s4
+                .input-field.col.s2
                   select(multiple='')#waste_select
-                    option(value='', disabled='', selected='') Choose your waste type
+                    option(value='', disabled='', selected='') Choose waste type
                     label Waste Type
-                .input-field.col.s4
+                .input-field.col.s2
                   select(multiple='')#move_select
-                    option(value='', disabled='', selected='') Choose your first movement
+                    option(value='', disabled='', selected='') Choose first movement
                   label First Movement
-                .input-field.col.s4
+                .input-field.col.s2
                   select(multiple='')#contract_select
-                    option(value='', disabled='', selected='') Choose your contract type
+                    option(value='', disabled='', selected='') Choose contract type
                   label Contract
 
               .row Columns:
@@ -98,7 +144,6 @@ block content
                   label(for='contract-box').check_space Contract
                 .row
 
-                .row Calculations:
                 .row
                   .col.s2
                     input#tonnage-box.filled-in(type='checkbox')
@@ -118,31 +163,33 @@ block content
                     | Submit
                     i.material-icons.right send
 
+      li
+        .collapsible-header.active
+          i.material-icons grid_on
+          | table
+        .collapsible-body
+
+          .row
+            div.col.s12
+              table.bordered.highlight
+                thead
+                  tr
+                    //- Add a header for each column.
+                    each column in columns
+                      th(data-field=column.key)
+                        a(href=column.sortURL) #{column.title}
+                          i.right.material-icons #{column.sortIcon}
+                tbody
+                  //- Add a row for each data item.
+                  each row in data
+                    tr.aggregateRow(data-field=row.__idx)
+                      //- Within the row, add a cell for each column heading.
+                      each column in columns
+                        //- Use Array.reduce to lookup the json path, e.g. evaluate row["_id.SID"]
+                        td= column.key.split(".").reduce(function(obj, key) { return obj[key] }, row)
 
 
 
-
-
-
-
-  div.row
-    div.col.s12
-      table.bordered.highlight
-        thead
-          tr
-            //- Add a header for each column.
-            each column in columns
-              th(data-field=column.key)
-                a(href=column.sortURL) #{column.title}
-                  i.right.material-icons #{column.sortIcon}
-        tbody
-          //- Add a row for each data item.
-          each row in data
-            tr.aggregateRow(data-field=row.__idx)
-              //- Within the row, add a cell for each column heading.
-              each column in columns
-                //- Use Array.reduce to lookup the json path, e.g. evaluate row["_id.SID"]
-                td= column.key.split(".").reduce(function(obj, key) { return obj[key] }, row)
         
     
 
