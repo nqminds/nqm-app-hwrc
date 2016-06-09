@@ -24,7 +24,7 @@ WasteMap = function(widgetId, container, input_data){
 
     self.config = {};
 
-    console.log(input_data)
+    //console.log(input_data)
 
 
     var check_list = [
@@ -42,9 +42,9 @@ WasteMap = function(widgetId, container, input_data){
     });
 
 
-    self._get_data(input_data.districtData, function(res){
-        self.checkList._check("districtData", res)
-    });
+    //self._get_data(input_data.districtData, function(res){
+    //    self.checkList._check("districtData", res)
+    //});
 
     self._get_data(input_data.poiUrl, function(res){
         self.checkList._check("poiData", res)
@@ -70,16 +70,33 @@ WasteMap.prototype._draw_map = function(data){
 
     var self = this;
 
+    //console.log(self);
     self.polygon = data.boundaryData;
-    self.polygonData = data.districtData;
+    //self.polygonData = data.districtData;
     self.poi = data.poiData;
 
-    self.hwrcLookup = data.hwrcLookup
 
-    self._init();
+    self.hwrcLookup = data.hwrcLookup;
+
+
+
 
     self._bind_events();
 
+    self._init();
+};
+
+
+WasteMap.prototype._lookupHwrc = function(inKey, inProp, outKey){
+
+    var self = this;
+
+
+    for(var i = 0; i < self.hwrcLookup.length; i++){
+        if(self.hwrcLookup[i][inKey] == inProp){
+            return self.hwrcLookup[i][outKey]
+        }
+    }
 };
 
 WasteMap.prototype._init = function(){
@@ -94,13 +111,13 @@ WasteMap.prototype._init = function(){
     var fPolygonFill = function(d){
         var colors =  colorbrewer.Blues[polygon_bucket_count];
 
-        if(d.val==0){ return "white";}
+        if(d.properties.percentile==0){ return "white";}
 
         var step_size = 1 / polygon_bucket_count;
         var step = step_size;
         var step_count = 0;
 
-        while(d.val > step){
+        while(d.properties.percentile > step){
             step += step_size;
             step_count ++ ;
         }
@@ -109,79 +126,57 @@ WasteMap.prototype._init = function(){
     };
 
     var fPoiFill = function(d){
-        var colors =  colorbrewer.RdYlGn[poi_bucket_count];
 
         var nid = $("#nid_map_select").val();
 
+        var Bit_Index = self._lookupHwrc("GeoJson_ID", d.properties.NAME, "Bit_Index");
 
-
-        for(var i = 0; i < self.hwrcLookup.length; i++){
-            if(self.hwrcLookup[i].HWRC == d.id){
-                if(nid.charAt(i) == 0){
-                    return colorbrewer.Greys[3][1]
-                }
-
-            }
+        if(nid.charAt(Bit_Index) == 0) {
+            return "black"//colorbrewer.Greys[3][1]
         }
-
-
-        if(d.val==0){
-            return colors[(poi_bucket_count - 1)/2];
-        }
-
-        var step_size = 1 / poi_bucket_count;
-        var step = step_size;
-        var step_count = 0;
-
-        while(d.val > step){
-            step += step_size;
-            step_count ++ ;
-        }
-
-        return colors[step_count]
+        return "#ffffbf"
     };
+
 
     var fPoiStroke = function(d){
 
+        return "black";
 
-        var nid = $("#nid_map_select").val();
+        //var nid = $("#nid_map_select").val();
+        //
+        //var bit;
+        //
+        //for(var i = 0; i < self.hwrcLookup.length; i++){
+        //    if(self.hwrcLookup[i].HWRC == d.id){
+        //        bit = i;
+        //        break
+        //    }
+        //}
+        //
+        //
+        //flagOn = false;
+        //flagOff = false;
+        //
+        //var options = $("#nid_map_select option")
+        //
+        //for(var i = 0; i < options.length; i++){
+        //
+        //        if(options[i].value.charAt(bit) == "1"){
+        //            flagOn = true
+        //        }
+        //        if(options[i].value.charAt(bit) == "0"){
+        //            flagOff = true
+        //        }
+        //
+        //
+        //        if(flagOn == true && flagOff == true){
+        //
+        //            //return colorbrewer.Greys[3][2]
+        //            return "black"
+        //        }
+        //
+        //}
 
-        var bit;
-
-        for(var i = 0; i < self.hwrcLookup.length; i++){
-            if(self.hwrcLookup[i].HWRC == d.id){
-                bit = i;
-                break
-            }
-        }
-
-
-        flagOn = false;
-        flagOff = false;
-
-        var options = $("#nid_map_select option")
-
-        for(var i = 0; i < options.length; i++){
-
-                if(options[i].value.charAt(bit) == "1"){
-                    flagOn = true
-                }
-                if(options[i].value.charAt(bit) == "0"){
-                    flagOff = true
-                }
-
-
-                if(flagOn == true && flagOff == true){
-
-                    return colorbrewer.Greys[3][2]
-                }
-
-        }
-
-
-
-
-        return "black"
     };
 
 
@@ -192,7 +187,7 @@ WasteMap.prototype._init = function(){
             "fill": fPolygonFill
         },
         poi_style: {
-            "opacity": 1,
+            "opacity": 0.8,
             "fill": fPoiFill,
             "stroke": fPoiStroke
         }
@@ -201,17 +196,57 @@ WasteMap.prototype._init = function(){
 
     self.map.render();
 
-    //self._update();
+    //call update
+    get_district_data(function(districtData, districtRanks ){
+        get_hwrc_data(function(poiData, poiMax){
+            ee.emitEvent("update_map", [districtData, districtRanks, poiData, poiMax]);
+        })
+    });
 
 
 
 };
 
-WasteMap.prototype._update = function(polygon_data, poi_data){
+
+
+
+
+WasteMap.prototype._update = function(polygon_data, polygon_ranks, poi_data, poi_max){
 
     var self = this;
 
-    self.map.update(polygon_data, poi_data)
+    self.polygon_ranks = polygon_ranks
+
+    for(var polygon_index in self.polygon){
+        var id = self.polygon[polygon_index].properties.LAD14CD;
+
+        for(var polygon_data_index in polygon_data){
+            if(polygon_data[polygon_data_index].id == id){
+                self.polygon[polygon_index].properties.val = polygon_data[polygon_data_index].val;
+                self.polygon[polygon_index].properties.percentile = ( self.polygon_ranks.indexOf(polygon_data[polygon_data_index].val) + 1)/ self.polygon_ranks.length;
+                break
+            }
+        }
+    }
+
+    self.poi_max = poi_max;
+
+    for(var poi_index in self.poi){
+
+        var inProp = self.poi[poi_index].properties.NAME;
+        var id = self._lookupHwrc("GeoJson_ID", inProp, "HWRC")
+        for(var poi_data_index in poi_data){
+            if(poi_data[poi_data_index].id == id){
+                self.poi[poi_index].properties.val = poi_data[poi_data_index].val;
+                self.poi[poi_index].properties.id = id;
+                break
+            }
+        }
+
+    }
+
+
+    self.map.update(self.polygon, self.poi, self.poi_max)
 
 };
 

@@ -55,11 +55,14 @@ d3Components.prototype._map = function(widget, configuration){
     var path = undefined;
     var polygon = undefined;
     var poi = undefined;
+    var poi_back = undefined;
+    var poiMax = undefined;
     //
     //function feature_click(d){
     //    controller._area_change(d.properties.id)
     //
     //}
+
 
     function configure(widget, configuration) {
 
@@ -115,7 +118,7 @@ d3Components.prototype._map = function(widget, configuration){
 
         //var current_area = state.current_area;
 
-        svg = widget.chart.append("g")
+        svg = widget.chart.append("g");
             //.attr("transform", "translate(" + that.config.x + "," + that.config.y + ")");
 
         polygon_layer = svg.selectAll("path")
@@ -130,43 +133,123 @@ d3Components.prototype._map = function(widget, configuration){
                 "stroke-width":1,
                 "fill":"white"
             })
+            .on("mouseover", function(d) {
+                div.transition()
+                    .duration(200)
+                    .style("opacity", .9);
+                div	.html(d.properties.LAD14NM + " District<br/>&pound" + d.properties.val.toLocaleString())
+                    .style("left", (d3.event.pageX) + "px")
+                    .style("top", (d3.event.pageY - 28) + "px");
+            })
+            .on("mouseout", function(d) {
+                div.transition()
+                    .duration(500)
+                    .style("opacity", 0);
+            });
             //.style(that.config.style)
             //.on("click", feature_click);
 
-        //d3.select("#feature" + state.current_area + widget.widgetId).moveToFront();
 
 
-        poi_layer = svg.selectAll("circle")
+
+
+
+
+
+
+        //poi_back = svg.selectAll("circle_back")
+        //    .data(poi)
+        //    .enter()
+        //    .append("circle")
+        //    .attr("cx", function (d) { return projection(d.geometry.coordinates)[0]; })
+        //    .attr("cy", function (d) { return projection(d.geometry.coordinates)[1]; })
+        //    .attr("r", "10px")
+        //    .attr("fill", "white")
+        //    .attr("stroke", "black")
+        //    .attr("stroke-width", "2px")
+
+        // Define the div for the tooltip
+        var div = d3.select("body").append("div")
+            .attr("class", "tooltip")
+            .style("opacity", 0);
+
+
+        poi_layer = svg.selectAll("circle_front")
             .data(poi)
             .enter()
             .append("circle")
             .attr("cx", function (d) { return projection(d.geometry.coordinates)[0]; })
             .attr("cy", function (d) { return projection(d.geometry.coordinates)[1]; })
-            .attr("r", "6px")
+            .attr("r", "8px")
             .attr("fill", "white")
             .attr("stroke", "black")
             .attr("stroke-width", "2px")
+            .on("mouseover", function(d) {
+                div.transition()
+                    .duration(200)
+                    .style("opacity", .9);
+                div	.html(d.properties.id + " HWRC<br/>&pound" + d.properties.val.toLocaleString())
+                    .style("left", (d3.event.pageX) + "px")
+                    .style("top", (d3.event.pageY - 28) + "px");
+            })
+            .on("mouseout", function(d) {
+                div.transition()
+                    .duration(500)
+                    .style("opacity", 0);
+            });
+
 
 
 
     }
     that.render = render;
 
-    function update(polygon_data, poi_data) {
+
+
+    function update(polygon, poi, poiMax) {
+
+
+        var rscale = d3.scale.linear()
+            .domain([0,poiMax])
+            .range([4,10])
 
         polygon_layer
-            .data(polygon_data)
+            .data(polygon)
             .transition()
             .duration(1000)
             .style(that.config.polygon_style)
         //
         //d3.select("#feature" + state.current_area + widget.widgetId).moveToFront();
 
+
+
+
+
         poi_layer
-            .data(poi_data)
+            .data(poi)
+            .attr("id", function(d) { return "#poi_" + widget.widgetId + "_" + d.properties.id} )
             .transition()
             .duration(1000)
             .style(that.config.poi_style)
+            .attr('r', function(d){
+                return rscale(d.properties.val);
+            })
+
+        poi.sort(function(a,b){
+            if (a.properties.val < b.properties.val)
+                return 1;
+            else if (a.properties.val > b.properties.val)
+                return -1;
+            else
+                return 0;
+        })
+
+        for(var i = 0; i < poi.length; i++){
+            d3.select("#poi_" + widget.widgetId + "_" + poi[i].properties.id).moveToFront();
+        }
+
+
+
 
     }
     that.update = update;
@@ -180,3 +263,22 @@ d3Components.prototype._map = function(widget, configuration){
 };
 
 
+
+
+//---d3 functions--------------
+
+d3.selection.prototype.moveToBack = function() {
+    return this.each(function() {
+        var firstChild = this.parentNode.firstChild;
+        if (firstChild) {
+
+            this.parentNode.insertBefore(this, firstChild);
+        }
+    });
+};
+
+d3.selection.prototype.moveToFront = function() {
+    return this.each(function(){
+        this.parentNode.appendChild(this);
+    });
+};

@@ -28,9 +28,9 @@ block content
       populate_map_form();
 
       $("#map_form").change(function () {
-        get_district_data(function(districtData){
-          get_hwrc_data(function(poiData){
-            ee.emitEvent("update_map", [districtData, poiData]);
+        get_district_data(function(districtData, districtRanks){
+          get_hwrc_data(function(poiData, poiMax){
+            ee.emitEvent("update_map", [districtData, districtRanks, poiData, poiMax]);
           })
         })
       });
@@ -62,19 +62,19 @@ block content
                   select#nid_map_select
                     //option(value='', disabled='', selected='') Choose network
                   label NID
-              .row
-                .col.s1
-                  input#tonnage_map_radio(name='map_data_group',value='Tonnage', type='radio')
-                  label(for='tonnage_map_radio') tonnage
-                .col.s1
-                  input#delta_tonnage_map_radio(name='map_data_group', value='Delta_Tonnage', type='radio')
-                  label(for='delta_tonnage_map_radio') delta tonnage
-                .col.s1
-                  input#cost_map_radio(name='map_data_group', value='Cost', type='radio', checked='true')
-                  label(for='cost_map_radio') cost
-                .col.s1
-                  input#delta_cost_map_radio(name='map_data_group', value='Delta_Cost',type='radio')
-                  label(for='delta_cost_map_radio') delta cost
+              //.row
+                //.col.s1
+                //  input#tonnage_map_radio(name='map_data_group',value='Tonnage', type='radio')
+                //  label(for='tonnage_map_radio') tonnage
+                //.col.s1
+                //  input#delta_tonnage_map_radio(name='map_data_group', value='Delta_Tonnage', type='radio')
+                //  label(for='delta_tonnage_map_radio') delta tonnage
+                //.col.s1
+                //  input#cost_map_radio(name='map_data_group', value='Cost', type='radio', checked='true')
+                //  label(for='cost_map_radio') cost
+                //.col.s1
+                //  input#delta_cost_map_radio(name='map_data_group', value='Delta_Cost',type='radio')
+                //  label(for='delta_cost_map_radio') delta cost
 
           .row
             div#mapContainer
