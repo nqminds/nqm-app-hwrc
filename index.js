@@ -1,7 +1,8 @@
 
 (function() {
   "use strict";
-  
+
+
   var log = require("debug")("hwrc-index");
   var argv = require("minimist")(process.argv.slice(2));
   var express = require('express');
@@ -15,7 +16,7 @@
   app.get("/", function(req, res) {
     res.render("default");
   });
-  
+
   // Load the RC lookup and build a hash-table for fast lookup.
   log("loading lookup resource");
   var loadRCLookup = require("./lib/rcLookup");
@@ -25,7 +26,8 @@
     } else {
       // Initialise aggregate table factory.
       var aggregateTableFactory = require("./lib/aggregateTableFactory")(rcLookupTable);
-      
+
+
       // Setup aggregate table route.
       app.get("/:resourceId", aggregateTableFactory);
 
