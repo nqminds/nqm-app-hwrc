@@ -32,7 +32,7 @@
       app.get("/:resourceId", aggregateTableFactory);
 
       // Start the server.
-      var port = argv.port || 8888;
+      var port = argv.port || 7777;
       app.listen(port, function () {
         console.log("Listening on port " + port);
       });              

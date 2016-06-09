@@ -36,8 +36,8 @@ var get_district_data = function(callback){
 
         var datasetId = $("#dataset_id").val();
 
-        var unit = $("input[name='map_data_group']:checked").val();
-        unit = "Tonnage";
+        //var unit = $("input[name='map_data_group']:checked").val();
+        var unit = "Cost";
 
         var district_data_url = 'https://q.nqminds.com/v1/datasets/'
             + datasetId
@@ -82,11 +82,12 @@ var get_district_data = function(callback){
                     if (value == 0) {
                         data.push({id: entity, val: 0});
                     } else {
-                        data.push({id: entity, val: (ranks.indexOf(value) + 1) / ranks_count});
+                        //data.push({id: entity, val: (ranks.indexOf(value) + 1) / ranks_count});
+                        data.push({id: entity, val: value});
                     }
                 }
 
-                callback(data);
+                callback(data, ranks);
 
             })
         })
@@ -94,6 +95,51 @@ var get_district_data = function(callback){
 
 };
 
+//var get_hwrc_data = function(callback){
+//
+//    var sid = $("#sid_map_select").val();
+//    var nid = $("#nid_map_select").val();
+//
+//    //if(sid == null){sid = "2015"}
+//    //if(nid == null){nid = "11111111111111111111111111"}
+//
+//    if(sid == null || nid == null){
+//        callback([])
+//    } else {
+//
+//        var datasetId = $("#dataset_id").val();
+//
+//        var unit = $("input[name='map_data_group']:checked").val();
+//
+//        var data_url = 'https://q.nqminds.com/v1/datasets/'
+//            + datasetId
+//            + '/aggregate?pipeline=[{"$match":{"$and":[{"Contract":{"$ne":"Excess"}},{"SID":"'
+//            + sid
+//            + '"},{"NID":"'
+//            + nid
+//            + '"}]}},{"$group":{"_id":{"HWRC":"$HWRC"},"Value":{"$sum":"$'
+//            + unit
+//            + '"}}}]';
+//
+//        //console.log(data_url)
+//
+//        $.ajax(data_url).done(function (res) {
+//
+//            var values = res.data;
+//            var data = [];
+//            for (var value_index = 0; value_index < values.length; value_index++) {
+//
+//                var entity = values[value_index]._id.HWRC;
+//                var value = values[value_index].Value;
+//                data.push({id: entity, val: value});
+//
+//            }
+//
+//            callback(data);
+//
+//        })
+//    }
+//};
 var get_hwrc_data = function(callback){
 
     var sid = $("#sid_map_select").val();
@@ -108,7 +154,8 @@ var get_hwrc_data = function(callback){
 
         var datasetId = $("#dataset_id").val();
 
-        var unit = $("input[name='map_data_group']:checked").val();
+        //var unit = $("input[name='map_data_group']:checked").val();
+        var unit = "Cost"
 
         var data_url = 'https://q.nqminds.com/v1/datasets/'
             + datasetId
@@ -120,47 +167,38 @@ var get_hwrc_data = function(callback){
             + unit
             + '"}}}]';
 
-        var rank_url = 'https://q.nqminds.com/v1/datasets/'
+        var max_url = 'https://q.nqminds.com/v1/datasets/'
             + datasetId
             + '/aggregate?pipeline=[{"$match":{"$and":[{"Contract":{"$ne":"Excess"}},{"SID":"'
             + sid
-            + '"}]}},{"$group":{"_id":{"HWRC":"$HWRC","NID":"$NID"},"Values":{"$sum":"$'
+            + '"}]}},{"$group":{"_id":null,"Max":{"$max":"$'
             + unit
-            + '"}}},{"$group":{"_id":"null","All_Values":{"$push":"$Values"}}}]';
+            + '"}}}]';
 
         //console.log(data_url)
-        //console.log(rank_url)
+        //console.log(max_url)
 
 
         $.ajax(data_url).done(function (res) {
 
             var values = res.data;
 
-            $.ajax(rank_url).done(function (res) {
+            $.ajax(max_url).done(function (res) {
 
-                var ranks = res.data[0].All_Values.sort();
+                var max = res.data[0].Max;
 
-                //remove 0s from ranks array
-                while (ranks[0] == 0) {
-                    ranks.shift();
-                }
-
-                var ranks_count = ranks.length;
 
                 var data = [];
                 for (var value_index = 0; value_index < values.length; value_index++) {
 
                     var entity = values[value_index]._id.HWRC;
                     var value = values[value_index].Value;
+                    data.push({id: entity, val: value});
 
-                    if (value == 0) {
-                        data.push({id: entity, val: 0});
-                    } else {
-                        data.push({id: entity, val: (ranks.indexOf(value) + 1) / ranks_count});
-                    }
                 }
 
-                callback(data);
+
+                callback(data, max);
 
             })
         })
