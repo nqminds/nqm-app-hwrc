@@ -77,7 +77,7 @@ block content
                 //  label(for='delta_cost_map_radio') delta cost
 
           .row
-            div#mapContainer
+            .col.s4#mapContainer
 
 
       li
@@ -157,6 +157,33 @@ block content
                   .col.s2
                     input#delta_cost-box.filled-in(type='checkbox')
                     label(for='delta_cost-box').check_space Delta Cost
+
+                .row
+                  .col.s2
+                    input#winter-box.filled-in(type='checkbox')
+                    label(for='winter-box').check_space Winter
+                  .col.s2
+                    input#Monday-box.filled-in(type='checkbox')
+                    label(for='Monday-box').check_space Monday
+                  .col.s2
+                    input#Tuesday-box.filled-in(type='checkbox')
+                    label(for='Tuesday-box').check_space Tuesday
+                  .col.s2
+                    input#Wednesday-box.filled-in(type='checkbox')
+                    label(for='Wednesday-box').check_space Wednesday
+                  .col.s2
+                    input#Thursday-box.filled-in(type='checkbox')
+                    label(for='Thursday-box').check_space Thursday
+                  .col.s2
+                    input#Friday-box.filled-in(type='checkbox')
+                    label(for='Friday-box').check_space Friday
+                  .col.s2
+                    input#Saturday-box.filled-in(type='checkbox')
+                    label(for='Saturday-box').check_space Saturday
+                  .col.s2
+                    input#Sunday-box.filled-in(type='checkbox')
+                    label(for='Sunday-box').check_space Sunday
+
 
                 .row
                   button.btn.waves-effect.waves-light(type='submit', name='action')

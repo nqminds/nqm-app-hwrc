@@ -64,7 +64,9 @@ var get_district_data = function(callback){
 
             $.ajax(district_rank_url).done(function (res) {
 
-                var ranks = res.data[0].All_Values.sort();
+                var ranks = res.data[0].All_Values.sort(function(a,b){return a - b});
+
+
 
                 //remove 0s from ranks array
                 while (ranks[0] == 0) {
@@ -233,7 +235,7 @@ window.onload = function() {
 
 
 
-    var boundary_datasetId = "EybZ0ametx";
+    var boundary_datasetId = "SylXzM7_N";
     build_boundary_url(boundary_datasetId, function(res){
         checkList_wasteMap._check("boundaryUrl", res)
     });

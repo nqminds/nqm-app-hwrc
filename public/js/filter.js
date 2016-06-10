@@ -21,7 +21,16 @@ var oCheck = [
     {id: "#tonnage-box", key:"Tonnage", type: "sum"},
     {id: "#delta_tonnage-box", key:"Delta_Tonnage", type: "sum"},
     {id: "#cost-box", key:"Cost", type: "sum"},
-    {id: "#delta_cost-box", key:"Delta_Cost", type: "sum"}
+    {id: "#delta_cost-box", key:"Delta_Cost", type: "sum"},
+    {id: "#winter-box", key:"Winter", type: "sum"},
+    {id: "#Monday-box", key:"Monday", type: "sum"},
+    {id: "#Tuesday-box", key:"Tuesday", type: "sum"},
+    {id: "#Wednesday-box", key:"Wednesday", type: "sum"},
+    {id: "#Thursday-box", key:"Thursday", type: "sum"},
+    {id: "#Friday-box", key:"Friday", type: "sum"},
+    {id: "#Saturday-box", key:"Saturday", type: "sum"},
+    {id: "#Sunday-box", key:"Sunday", type: "sum"},
+
 ];
 
 var oMapOptions = [
@@ -276,13 +285,47 @@ var populate_map_form = function(){
 
     next_select(0, oMapOptions, function(res){
 
-        get_district_data(function(districtData){
-            get_hwrc_data(function(poiData){
-                ee.emitEvent("update_map", [districtData, poiData]);
+        get_district_data(function(districtData, districtRanks){
+            get_hwrc_data(function(poiData, poiMax){
+                ee.emitEvent("update_map", [districtData, districtRanks, poiData, poiMax]);
             })
         })
 
 
     });
 };
+
+var update_map_nid = function(bit_index){
+
+    var current_nid = $("#nid_map_select").val();
+
+    var bit = current_nid.charAt(bit_index);
+    if(bit == 0){
+        bit = 1;
+    } else {
+        bit = 0;
+    }
+
+    var new_nid = current_nid.substr(0, bit_index) + bit + current_nid.substr(bit_index + 1 );
+
+
+    oSelect = document.getElementById("nid_map_select");
+    for(var i = 0; i < oSelect.length; i++) {
+        if(oSelect.options[i].value == new_nid) {
+            oSelect.options[i].selected = true;
+
+            $('select:not([multiple])').material_select();
+
+            get_district_data(function(districtData, districtRanks){
+                get_hwrc_data(function(poiData, poiMax){
+                    ee.emitEvent("update_map", [districtData, districtRanks, poiData, poiMax]);
+                })
+            })
+        }
+    }
+
+
+};
+
+ee.addListener("update_map_nid", update_map_nid);
 
