@@ -1,4 +1,6 @@
 {
+  "rootURL": "http://localhost:7777",
+  "authServerURL": "https://tdx.nqminds.com",
   "RCLookupResourceId": "S1lWjFHVV",
   "baseQueryURL": "https://q.nqminds.com/v1/datasets/"
 }
