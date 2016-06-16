@@ -82,7 +82,7 @@ d3Components.prototype._map = function(widget, configuration){
             .rotate([4.4, 0])
             .parallels([50, 60])
             .scale(25000)
-            .translate([-100,50]);
+            .translate([-100,20]);
             //.scale(that.config.compWidth * 45)
             //.translate([that.config.compWidth / 4, that.config.compHeight / 4]);
 

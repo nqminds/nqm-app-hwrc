@@ -199,7 +199,7 @@ WasteMap.prototype._init = function(){
 
         return "poi"
 
-    }
+    };
 
 
     var fPoiStroke = function(d){
@@ -310,6 +310,14 @@ WasteMap.prototype._get_data = function(input, callback){
 };
 
 
+WasteMap.prototype._updateText = function(total_cost, rank, ranks_count){
+    $("#mapTotalCost").text("Total Cost: \u00A3" + Math.round(total_cost).toLocaleString());
+    $("#mapRank").text("Ranked " + rank + " out of " + ranks_count + " permutations");
+
+
+};
+
+
 
 
 WasteMap.prototype._bind_events = function(){
@@ -317,6 +325,8 @@ WasteMap.prototype._bind_events = function(){
     var self = this;
 
     ee.addListener('update_map', self._update.bind(self));
+
+    ee.addListener("update_map_text", self._updateText.bind(self))
 
 };
 

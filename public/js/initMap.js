@@ -97,6 +97,64 @@ var get_district_data = function(callback){
 
 };
 
+
+var get_nid_data = function(callback){
+
+    var sid = $("#sid_map_select").val();
+    var nid = $("#nid_map_select").val();
+
+    //if(sid == null){sid = "2015"}
+    //if(nid == null){nid = "11111111111111111111111111"}
+
+    if(sid == null || nid == null){
+        callback([])
+    } else {
+
+        var datasetId = $("#dataset_id").val();
+
+        //var unit = $("input[name='map_data_group']:checked").val();
+        var unit = "Cost";
+
+        var total_cost_url = 'https://q.nqminds.com/v1/datasets/'
+            + datasetId
+            + '/aggregate?pipeline=[{"$match":{"$and":[{"SID":"'
+            + sid
+            + '"},{"NID":"'
+            + nid
+            + '"}]}},{"$group":{"_id":null,"Total_Cost":{"$sum":"$'
+            + unit
+            + '"}}}]';
+
+        var cost_rank_url = 'https://q.nqminds.com/v1/datasets/'
+            + datasetId
+            + '/aggregate?pipeline=[{"$match":{"$and":[{"SID":"'
+            + sid
+            + '"}]}},{"$group":{"_id":{"NID":"$NID"},"Values":{"$sum":"$'
+            + unit
+            + '"}}},{"$group":{"_id":"null","All_Values":{"$push":"$Values"}}}]';
+
+
+        $.ajax(total_cost_url).done(function (res) {
+
+            var total_cost = res.data[0].Total_Cost;
+
+            console.log(total_cost)
+
+            $.ajax(cost_rank_url).done(function (res) {
+
+                var ranks = res.data[0].All_Values.sort(function(a,b){return a - b});
+
+                var rank = ranks.indexOf(total_cost);
+                var ranks_count = ranks.length;
+
+                callback(total_cost, rank, ranks_count);
+
+            })
+        })
+    }
+
+};
+
 //var get_hwrc_data = function(callback){
 //
 //    var sid = $("#sid_map_select").val();

@@ -33,6 +33,11 @@ block content
             ee.emitEvent("update_map", [districtData, districtRanks, poiData, poiMax]);
           })
         })
+        get_nid_data(function (total_cost, rank, ranks_count) {
+          ee.emitEvent("update_map_text", [total_cost, rank, ranks_count])
+        });
+
+
       });
 
 
@@ -75,6 +80,10 @@ block content
                 //.col.s1
                 //  input#delta_cost_map_radio(name='map_data_group', value='Delta_Cost',type='radio')
                 //  label(for='delta_cost_map_radio') delta cost
+          .row
+            .col.s12
+              h4#mapTotalCost Total Cost: &pound3,000,128
+              h5#mapRank Ranked 103 out of 4059 permutations
 
           .row
             .col.s4#mapContainer

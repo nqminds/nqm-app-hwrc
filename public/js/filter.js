@@ -319,10 +319,19 @@ var update_map_nid = function(bit_index){
             get_district_data(function(districtData, districtRanks){
                 get_hwrc_data(function(poiData, poiMax){
                     ee.emitEvent("update_map", [districtData, districtRanks, poiData, poiMax]);
-                })
-            })
+                });
+            });
+            get_nid_data(function(total_cost, rank, ranks_count){
+                ee.emitEvent("update_map_text", [total_cost, rank, ranks_count])
+            });
+
+
         }
+
+
     }
+
+
 
 
 };
