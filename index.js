@@ -6,26 +6,96 @@
   var argv = require("minimist")(process.argv.slice(2));
   var express = require('express');
   var app = express();
-  var session = require("express-session");
   var util = require("util");
   var config = require("./config");
   var request = require("request");
   var aggregateTableFactory = null;
   var _ = require("lodash"); 
+  var passport = require('passport');
+  var Strategy = require('passport-local').Strategy;
+  var ensureAuthenticated = require('connect-ensure-login').ensureLoggedIn;
 
-  // Initialise session
-  app.use(session({ secret: "0928jkafja*()" }));
+  // Configure the local strategy for use by Passport.
+  //
+  // The local strategy require a `verify` function which receives the credentials
+  // (`username` and `password`) submitted by the user.  The function must verify
+  // that the password is correct and then invoke `cb` with a user object, which
+  // will be set at `req.user` in route handlers after authentication.
+  passport.use(new Strategy(
+    function(username, password, cb) {
+      db.users.findByUsername(username, function(err, user) {
+        if (err) { return cb(err); }
+        if (!user) { return cb(null, false); }
+        if (user.password != password) { return cb(null, false); }
+        return cb(null, user);
+      });
+    }));
+
+
+  // Configure Passport authenticated session persistence.
+  //
+  // In order to restore authentication state across HTTP requests, Passport needs
+  // to serialize users into and deserialize users out of the session.  The
+  // typical implementation of this is as simple as supplying the user ID when
+  // serializing, and querying the user record by ID from the database when
+  // deserializing.
+  passport.serializeUser(function(user, cb) {
+    cb(null, user.id);
+  });
+
+  passport.deserializeUser(function(id, cb) {
+    db.users.findById(id, function (err, user) {
+      if (err) { return cb(err); }
+      cb(null, user);
+    });
+  });
 
   // Initialise static routes and view engine 
   app.use(express.static('public'));
+  app.set('views', __dirname + '/views');
   app.set('view engine', 'pug');
+
+  app.use(require('cookie-parser')());
+  app.use(require('body-parser').urlencoded({ extended: true }));
+
+  // Initialise session
+  app.use(require("express-session")({ secret: "0928jkafja*()", resave: false, saveUninitialized: false }));
   
-  var checkAuthenticated = function(req, res, next) {
+  // Initialize Passport and restore authentication state, if any, from the
+  // session.
+  app.use(passport.initialize());
+  app.use(passport.session());
+
+  var checkAuthenticatedTDX = function(req, res, next) {
     if (req.session.authenticated) {
       return next();
     }
     var authURL = util.format("%s/auth?rurl=%s/auth", config.authServerURL, config.rootURL);
     res.redirect(authURL);
+  };
+
+  var checkAuthenticatedBasic = function(req, res, next) {
+    var basicAuth = require("basic-auth");
+    if (req.session.authenticated) {
+      return next();
+    }
+    var authData = basicAuth(req);
+    if (authData) {
+      var options = {
+        headers: { "Authorization": "Basic " + authData.name + ":" + authData.pass }
+      };
+      request.post("http://q.nqminds.com/token", options, { json: true, grant_type: "client_credentials"}, function(err, qreq, qres) {
+        if (qres.statusCode === 200) {
+          next();
+        } else {
+          res.set("WWW-Authenticate", "Basic realm=Authorization required");
+          res.sendStatus(401);
+        }
+      });
+    } else {
+      res.set("WWW-Authenticate", "Basic realm=Authorization required");
+      res.sendStatus(401);
+    }
   };
 
   app.get("/auth", function(req,res) {
@@ -35,7 +105,7 @@
   });
 
   // Default route.
-  app.get("/", checkAuthenticated, function(req, res) {
+  app.get("/", ensureAuthenticated, function(req, res) {
     request.get("http://q.nqminds.com/v1/datasets/S1xAEmTT-/data?access_token=" + req.session.authenticated, function(req, resp) {
       if (resp.statusCode !== 200) {
         log("FAILED: " + resp.body);
