@@ -62,11 +62,11 @@ block content
                 .input-field.col.s2
                   select#sid_map_select
                     //option(value='', disabled='', selected='') Choose year
-                  label SID
+                  label Year
                 .input-field.col.s2
                   select#nid_map_select
                     //option(value='', disabled='', selected='') Choose network
-                  label NID
+                  label Close HWRC
               //.row
                 //.col.s1
                 //  input#tonnage_map_radio(name='map_data_group',value='Tonnage', type='radio')
@@ -84,9 +84,16 @@ block content
             .col.s12
               h4#mapTotalCost Total Cost: &pound3,000,128
               h5#mapRank Ranked 103 out of 4059 permutations
+              | You can click on #{" "}
+              span#greenHwrc green hwrc
+              span #{" "} to simulate closing them
 
           .row
             .col.s4#mapContainer
+
+          //.row
+          //  .col.s12
+          //    | click on green hwrc to close them
 
 
       li

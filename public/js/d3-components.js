@@ -188,9 +188,19 @@ d3Components.prototype._map = function(widget, configuration){
                 div.transition()
                     .duration(200)
                     .style("opacity", .9);
-                div	.html(d.properties.id + " HWRC<br/>&pound" + Math.round(d.properties.val).toLocaleString())
+
+                var html_string;
+                if(d.properties.val == 0){
+                    html_string = d.properties.id + " HWRC<br/>-closed-</br>click to open"
+                } else {
+                    html_string = d.properties.id + " HWRC<br/>&pound" + Math.round(d.properties.val).toLocaleString()
+                }
+
+                div	.html(html_string)
                     .style("left", (d3.event.pageX) + 28 + "px")
                     .style("top", (d3.event.pageY - 28) + "px");
+
+
             })
             .on("mouseout", function(d) {
                 div.transition()

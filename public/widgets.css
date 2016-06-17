@@ -27,3 +27,7 @@ div.tooltip {
 .clickable {
     cursor:pointer;
 }
+
+#greenHwrc {
+    color: #91cf60;
+}
