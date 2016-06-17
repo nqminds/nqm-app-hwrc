@@ -64,28 +64,50 @@
 
   // Default route.
   app.get("/", ensureAuthenticated(), function(req, res) {
-    res.render("default", { outputDS: req.session.outputDS, costDS: req.session.costDS });
+    res.redirect(util.format("/model/%s?pipeline=[]", req.session.outputDS));
   });
 
   app.get("/login", function(req,res) {
     res.render("login");
   });
 
-  app.post("/login", bodyParser.single(), passport.authenticate("local",{ successReturnToOrRedirect: "/choose", failureRedirect: "/login" }));
+  app.post("/login", bodyParser.single(), passport.authenticate("local",{ successReturnToOrRedirect: "/settings", failureRedirect: "/login" }));
 
-  var renderChooser = function(req, res, feedback) {
-    tdxAPI.query("datasets",{ "schemaDefinition.basedOn": config.outputDatasetSchema }, { name: 1, id: 1, _id: 0 }, null, function(err, qres, body) {
-      res.render("choose", { datasets: body, outputDS: req.session.outputDS, costDS: req.session.costDS, feedback: feedback || "" });
+  var renderSettings = function(req, res, feedback) {
+    tdxAPI.query("datasets",{ "schemaDefinition.basedOn": config.outputDatasetSchema }, { name: 1, id: 1, _id: 0 }, null, function(err, qres, outputDatasets) {
+      if (err) {
+        outputDatasets = [ { name: "failed to query TDX" }];
+      } else if (outputDatasets.length === 1) {
+        req.session.outputDS = outputDatasets[0].id;
+      }
+      tdxAPI.query("datasets",{ "schemaDefinition.basedOn": config.costDatasetSchema }, { name: 1, id: 1, _id: 0 }, null, function(err, qres, costDatasets) {
+        if (err) {
+          costDatasets = [ { name: "failed to query TDX" }];
+        } else if (costDatasets.length === 1) {
+          req.session.costDS = costDatasets[0].id;
+        }
+        res.render("settings", { 
+          outputDatasets: outputDatasets, 
+          costDatasets: costDatasets, 
+          outputDS: req.session.outputDS, 
+          costDS: req.session.costDS,
+          showOpen: req.session.nidMode, 
+          feedback: feedback || "" 
+        });
+      });
     });
   };
 
-  app.get("/choose", ensureAuthenticated(), renderChooser);
+  app.get("/settings", ensureAuthenticated(), function(req,res) {
+    renderSettings(req,res);
+  });
 
-  app.post("/choose", ensureAuthenticated(), bodyParser.single(), function(req, res) {
+  app.post("/settings", ensureAuthenticated(), bodyParser.single(), function(req, res) {
     req.session.outputDS = req.body.outputDS;
     req.session.costDS = req.body.costDS;
+    req.session.nidMode = req.body.showOpen === "open" ? true : false; 
     if (!req.session.outputDS || !req.session.costDS) {
-      renderChooser(req, res, "please select datasets");
+      renderSettings(req, res, "please select datasets");
     } else {
       res.redirect(util.format("/model/%s?pipeline=[]", req.session.outputDS));
     }
@@ -108,11 +130,16 @@
     });        
   });
 
+  app.get("/logout", function(req,res) {
+    req.logout();
+    res.redirect("/");
+  });
+
   var tableViewRoute = function(req, res) {
     // Get request parameters.
     var resourceId = req.params.resourceId;     // resource Id    
     var pipelineParam = req.query.pipeline;     // pipeline details
-    var nidMode = req.query.nidMode === "true"; // nid display mode
+    var nidMode = !!req.session.nidMode; //req.query.nidMode === "true"; // nid display mode
 
     aggregateTableFactory(resourceId, pipelineParam, nidMode, function(err, data) {
       if (err) {
@@ -127,7 +154,7 @@
     // Get request parameters.
     var resourceId = req.params.resourceId;     // resource Id    
     var pipelineParam = req.query.pipeline;     // pipeline details
-    var nidMode = req.query.nidMode === "true"; // nid display mode
+    var nidMode = !!req.session.nidMode; //req.query.nidMode === "true"; // nid display mode
 
     aggregateTableFactory(resourceId, pipelineParam, nidMode, function(err, data) {
       if (err) {

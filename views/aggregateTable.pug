@@ -2,11 +2,27 @@ extends ./layout.pug
 
 block rightNavMenu
   li
-    a(href=nidModeToggle.url) #{nidModeToggle.text}
+    a(href=nidModeToggle.url)
+      i.material-icons.left hdr_weak 
+      | #{nidModeToggle.text}
+    a(href="/settings")
+      i.material-icons.left settings
+      |settings
+    a(href="/logout")
+      i.material-icons.left exit_to_app
+      |logout
 
 block rightNavMenuMobile
   li
-    a(href=nidModeToggle.url) #{nidModeToggle.text}                 
+    a(href=nidModeToggle.url)
+      i.material-icons.left hdr_weak 
+      | #{nidModeToggle.text}
+    a(href="/settings")
+      i.material-icons.left settings
+      |settings
+    a(href="/logout")
+      i.material-icons.left exit_to_app
+      |logout
 
 block content
   script.
@@ -14,9 +30,6 @@ block content
       $(".aggregateRow").click(function() {
         alert("clicked row " + this.dataset.field);
       });
-    });
-
-    $(document).ready(function () {
 
       $('#filter_form').on('submit', function (res) {
         console.log("submit")
@@ -33,163 +46,184 @@ block content
             ee.emitEvent("update_map", [districtData, districtRanks, poiData, poiMax]);
           })
         })
+        get_nid_data(function (total_cost, rank, ranks_count) {
+          ee.emitEvent("update_map_text", [total_cost, rank, ranks_count])
+        });
       });
 
-
-
       $('select').material_select();
-
     });
 
+  .row
+    .col.s12
+      ul.tabs
+        li.tab.col.s3
+          a(href="#filter")
+            i.material-icons.hwrc-tab-icon filter_list
+            | filter
+        li.tab.col.s3
+          a(href="#grid")
+            i.material-icons.hwrc-tab-icon grid_on
+            | grid
+        li.tab.col.s3
+          a(href="#map")
+            i.material-icons.hwrc-tab-icon place
+            | map
+    .col.s12#filter
+      form#filter_form
+        .row
+        .row Dataset:
+        .row
+          .input-field.col.s2
+            input#dataset_id.validate(value='SkgFcSoEX', type='text')
+            label(for='dataset_id') dataset Id
 
+        .row Filters:
+        .row
+          .input-field.col.s2
+            select(multiple='')#sid_select
+              option(value='', disabled='', selected='') Choose year
+            label SID
+          .input-field.col.s2
+            select(multiple='')#nid_select
+              option(value='', disabled='', selected='') Choose network
+            label NID
+          .input-field.col.s2
+            select(multiple='')#hwrc_select
+              option(value='', disabled='', selected='') Choose hwrc
+            label HWRC
+          .input-field.col.s2
+            select(multiple='')#waste_select
+              option(value='', disabled='', selected='') Choose waste type
+              label Waste Type
+          .input-field.col.s2
+            select(multiple='')#move_select
+              option(value='', disabled='', selected='') Choose first movement
+            label First Movement
+          .input-field.col.s2
+            select(multiple='')#contract_select
+              option(value='', disabled='', selected='') Choose contract type
+            label Contract
 
-  div.row
-    ul.collapsible(data-collapsible='accordion')
-      li
-        .collapsible-header
-          i.material-icons place
-          | map
-        .collapsible-body
+        .row Columns:
+        .row
+          .col.s2
+            input#sid-box.filled-in(type='checkbox')
+            label(for='sid-box').check_space SID
+          .col.s2
+            input#nid-box.filled-in(type='checkbox')
+            label(for='nid-box').check_space NID
+          .col.s2
+            input#hwrc-box.filled-in(type='checkbox')
+            label(for='hwrc-box').check_space HWRC
+          .col.s2
+            input#waste-box.filled-in(type='checkbox')
+            label(for='waste-box').check_space Waste Type
+          .col.s2
+            input#move-box.filled-in(type='checkbox')
+            label(for='move-box').check_space First Movement
+          .col.s2
+            input#contract-box.filled-in(type='checkbox')
+            label(for='contract-box').check_space Contract
           .row
-          .row
-            form.col.s12#map_form
-              .row
-                .input-field.col.s2
-                  select#sid_map_select
-                    //option(value='', disabled='', selected='') Choose year
-                  label SID
-                .input-field.col.s2
-                  select#nid_map_select
-                    //option(value='', disabled='', selected='') Choose network
-                  label NID
-              //.row
-                //.col.s1
-                //  input#tonnage_map_radio(name='map_data_group',value='Tonnage', type='radio')
-                //  label(for='tonnage_map_radio') tonnage
-                //.col.s1
-                //  input#delta_tonnage_map_radio(name='map_data_group', value='Delta_Tonnage', type='radio')
-                //  label(for='delta_tonnage_map_radio') delta tonnage
-                //.col.s1
-                //  input#cost_map_radio(name='map_data_group', value='Cost', type='radio', checked='true')
-                //  label(for='cost_map_radio') cost
-                //.col.s1
-                //  input#delta_cost_map_radio(name='map_data_group', value='Delta_Cost',type='radio')
-                //  label(for='delta_cost_map_radio') delta cost
-
-          .row
-            div#mapContainer
-
-
-      li
-        .collapsible-header
-          i.material-icons filter_list
-          | filter
-        .collapsible-body
-
-          .row
-            form.col.s12#filter_form
-              .row
-              .row Dataset:
-              .row
-                .input-field.col.s2
-                  input#dataset_id.validate(value='SkgFcSoEX', type='text')
-                  label(for='dataset_id') dataset Id
-
-              .row Filters:
-              .row
-                .input-field.col.s2
-                  select(multiple='')#sid_select
-                    option(value='', disabled='', selected='') Choose year
-                  label SID
-                .input-field.col.s2
-                  select(multiple='')#nid_select
-                    option(value='', disabled='', selected='') Choose network
-                  label NID
-                .input-field.col.s2
-                  select(multiple='')#hwrc_select
-                    option(value='', disabled='', selected='') Choose hwrc
-                  label HWRC
-                .input-field.col.s2
-                  select(multiple='')#waste_select
-                    option(value='', disabled='', selected='') Choose waste type
-                    label Waste Type
-                .input-field.col.s2
-                  select(multiple='')#move_select
-                    option(value='', disabled='', selected='') Choose first movement
-                  label First Movement
-                .input-field.col.s2
-                  select(multiple='')#contract_select
-                    option(value='', disabled='', selected='') Choose contract type
-                  label Contract
-
-              .row Columns:
-              .row
-                .col.s2
-                  input#sid-box.filled-in(type='checkbox')
-                  label(for='sid-box').check_space SID
-                .col.s2
-                  input#nid-box.filled-in(type='checkbox')
-                  label(for='nid-box').check_space NID
-                .col.s2
-                  input#hwrc-box.filled-in(type='checkbox')
-                  label(for='hwrc-box').check_space HWRC
-                .col.s2
-                  input#waste-box.filled-in(type='checkbox')
-                  label(for='waste-box').check_space Waste Type
-                .col.s2
-                  input#move-box.filled-in(type='checkbox')
-                  label(for='move-box').check_space First Movement
-                .col.s2
-                  input#contract-box.filled-in(type='checkbox')
-                  label(for='contract-box').check_space Contract
-                .row
-
-                .row
-                  .col.s2
-                    input#tonnage-box.filled-in(type='checkbox')
-                    label(for='tonnage-box').check_space Tonnage
-                  .col.s2
-                    input#delta_tonnage-box.filled-in(type='checkbox')
-                    label(for='delta_tonnage-box').check_space Delta Tonnage
-                  .col.s2
-                    input#cost-box.filled-in(type='checkbox')
-                    label(for='cost-box').check_space Cost
-                  .col.s2
-                    input#delta_cost-box.filled-in(type='checkbox')
-                    label(for='delta_cost-box').check_space Delta Cost
-
-                .row
-                  button.btn.waves-effect.waves-light(type='submit', name='action')
-                    | Submit
-                    i.material-icons.right send
-
-      li
-        .collapsible-header.active
-          i.material-icons grid_on
-          | table
-        .collapsible-body
 
           .row
-            div.col.s12
-              table.bordered.highlight
-                thead
-                  tr
-                    //- Add a header for each column.
-                    each column in columns
-                      th(data-field=column.key)
-                        a(href=column.sortURL) #{column.title}
-                          i.right.material-icons #{column.sortIcon}
-                tbody
-                  //- Add a row for each data item.
-                  each row in data
-                    tr.aggregateRow(data-field=row.__idx)
-                      //- Within the row, add a cell for each column heading.
-                      each column in columns
-                        //- Use Array.reduce to lookup the json path, e.g. evaluate row["_id.SID"]
-                        td= column.key.split(".").reduce(function(obj, key) { return obj[key] }, row)
+            .col.s2
+              input#tonnage-box.filled-in(type='checkbox')
+              label(for='tonnage-box').check_space Tonnage
+            .col.s2
+              input#delta_tonnage-box.filled-in(type='checkbox')
+              label(for='delta_tonnage-box').check_space Delta Tonnage
+            .col.s2
+              input#cost-box.filled-in(type='checkbox')
+              label(for='cost-box').check_space Cost
+            .col.s2
+              input#delta_cost-box.filled-in(type='checkbox')
+              label(for='delta_cost-box').check_space Delta Cost
+
+          .row
+            .col.s2
+              input#winter-box.filled-in(type='checkbox')
+              label(for='winter-box').check_space Winter
+            .col.s2
+              input#Monday-box.filled-in(type='checkbox')
+              label(for='Monday-box').check_space Monday
+            .col.s2
+              input#Tuesday-box.filled-in(type='checkbox')
+              label(for='Tuesday-box').check_space Tuesday
+            .col.s2
+              input#Wednesday-box.filled-in(type='checkbox')
+              label(for='Wednesday-box').check_space Wednesday
+            .col.s2
+              input#Thursday-box.filled-in(type='checkbox')
+              label(for='Thursday-box').check_space Thursday
+            .col.s2
+              input#Friday-box.filled-in(type='checkbox')
+              label(for='Friday-box').check_space Friday
+            .col.s2
+              input#Saturday-box.filled-in(type='checkbox')
+              label(for='Saturday-box').check_space Saturday
+            .col.s2
+              input#Sunday-box.filled-in(type='checkbox')
+              label(for='Sunday-box').check_space Sunday
 
 
+          .row
+            button.btn.waves-effect.waves-light(type='submit', name='action')
+              | Submit
+              i.material-icons.right send
 
-        
-    
+    .col.s12#grid
+      table.bordered.highlight
+        thead
+          tr
+            //- Add a header for each column.
+            each column in columns
+              th(data-field=column.key)
+                a(href=column.sortURL) #{column.title}
+                  i.right.material-icons #{column.sortIcon}
+        tbody
+          //- Add a row for each data item.
+          each row in data
+            tr.aggregateRow(data-field=row.__idx)
+              //- Within the row, add a cell for each column heading.
+              each column in columns
+                //- Use Array.reduce to lookup the json path, e.g. evaluate row["_id.SID"]
+                td= column.key.split(".").reduce(function(obj, key) { return obj[key] }, row)
+
+    .col.s12#map
+      form#map_form
+        .row
+          .input-field.col.s2
+            select#sid_map_select
+              //option(value='', disabled='', selected='') Choose year
+            label Year
+          .input-field.col.s2
+            select#nid_map_select
+              //option(value='', disabled='', selected='') Choose network
+            label Close HWRC
+        //.row
+          //.col.s1
+          //  input#tonnage_map_radio(name='map_data_group',value='Tonnage', type='radio')
+          //  label(for='tonnage_map_radio') tonnage
+          //.col.s1
+          //  input#delta_tonnage_map_radio(name='map_data_group', value='Delta_Tonnage', type='radio')
+          //  label(for='delta_tonnage_map_radio') delta tonnage
+          //.col.s1
+          //  input#cost_map_radio(name='map_data_group', value='Cost', type='radio', checked='true')
+          //  label(for='cost_map_radio') cost
+          //.col.s1
+          //  input#delta_cost_map_radio(name='map_data_group', value='Delta_Cost',type='radio')
+          //  label(for='delta_cost_map_radio') delta cost
+      .row
+        .col.s12
+          h4#mapTotalCost Total Cost: &pound3,000,128
+          h5#mapRank Ranked 103 out of 4059 permutations
+          | You can click on #{" "}
+          span#greenHwrc green hwrc
+          span #{" "} to simulate closing them
+
+      .row
+        .col.s4#mapContainer
+
 

@@ -6,8 +6,8 @@ d3Components.prototype._build_chart = function(widget){
 
     var c = widget.config;
 
-    c.full_width = 1400;
-    c.full_height = 400;
+    c.full_width = 500;
+    c.full_height = 500;
 
     c.margin = {};
     c.margin.left = 50;
@@ -81,8 +81,8 @@ d3Components.prototype._map = function(widget, configuration){
             .center([2.05, 51.45])
             .rotate([4.4, 0])
             .parallels([50, 60])
-            .scale(20000)
-            .translate([0,50]);
+            .scale(25000)
+            .translate([-100,20]);
             //.scale(that.config.compWidth * 45)
             //.translate([that.config.compWidth / 4, that.config.compHeight / 4]);
 
@@ -125,8 +125,8 @@ d3Components.prototype._map = function(widget, configuration){
             .data(polygon)
             .enter()
             .append("path")
-            .attr("class", "feature clickable")
-            .attr("id", function(d){ return "feature" + d.properties[that.config.id] + widget.widgetId})
+            .attr("class", "polygon")
+            .attr("id", function(d){ return "polygon" + d.properties[that.config.id] + widget.widgetId})
             .attr("d", path)
             .style({
                 "stroke":"black",
@@ -136,9 +136,9 @@ d3Components.prototype._map = function(widget, configuration){
             .on("mouseover", function(d) {
                 div.transition()
                     .duration(200)
-                    .style("opacity", .9);
-                div	.html(d.properties.LAD14NM + " District<br/>&pound" + d.properties.val.toLocaleString())
-                    .style("left", (d3.event.pageX) + "px")
+                    .style("opacity", .95);
+                div	.html(d.properties.LAD14NM + " District<br/>&pound" + Math.round(d.properties.val).toLocaleString())
+                    .style("left", (d3.event.pageX + 28) + "px")
                     .style("top", (d3.event.pageY - 28) + "px");
             })
             .on("mouseout", function(d) {
@@ -173,30 +173,44 @@ d3Components.prototype._map = function(widget, configuration){
             .attr("class", "tooltip")
             .style("opacity", 0);
 
-
         poi_layer = svg.selectAll("circle_front")
             .data(poi)
             .enter()
             .append("circle")
+            .attr(that.config.poi_class)
             .attr("cx", function (d) { return projection(d.geometry.coordinates)[0]; })
             .attr("cy", function (d) { return projection(d.geometry.coordinates)[1]; })
-            .attr("r", "8px")
-            .attr("fill", "white")
+            .attr("r", "4px")
+            .attr("fill", "black")
             .attr("stroke", "black")
             .attr("stroke-width", "2px")
             .on("mouseover", function(d) {
                 div.transition()
                     .duration(200)
                     .style("opacity", .9);
-                div	.html(d.properties.id + " HWRC<br/>&pound" + d.properties.val.toLocaleString())
-                    .style("left", (d3.event.pageX) + "px")
+
+                var html_string;
+                if(d.properties.val == 0){
+                    html_string = d.properties.id + " HWRC<br/>-closed-</br>click to open"
+                } else {
+                    html_string = d.properties.id + " HWRC<br/>&pound" + Math.round(d.properties.val).toLocaleString()
+                }
+
+                div	.html(html_string)
+                    .style("left", (d3.event.pageX) + 28 + "px")
                     .style("top", (d3.event.pageY - 28) + "px");
+
+
             })
             .on("mouseout", function(d) {
                 div.transition()
                     .duration(500)
                     .style("opacity", 0);
-            });
+            })
+            .on("click", function(d){
+                ee.emitEvent("update_map_nid", [d.properties.bit_index])
+            })
+        ;
 
 
 
@@ -206,8 +220,7 @@ d3Components.prototype._map = function(widget, configuration){
 
 
 
-    function update(polygon, poi, poiMax) {
-
+    function update(polygon, poi, poiMax, first_update) {
 
         var rscale = d3.scale.linear()
             .domain([0,poiMax])
@@ -227,7 +240,8 @@ d3Components.prototype._map = function(widget, configuration){
 
         poi_layer
             .data(poi)
-            .attr("id", function(d) { return "#poi_" + widget.widgetId + "_" + d.properties.id} )
+            .attr("id", function(d) {
+                return "#poi_" + widget.widgetId + "_" + d.properties.id})
             .transition()
             .duration(1000)
             .style(that.config.poi_style)
@@ -235,14 +249,14 @@ d3Components.prototype._map = function(widget, configuration){
                 return rscale(d.properties.val);
             })
 
-        poi.sort(function(a,b){
-            if (a.properties.val < b.properties.val)
-                return 1;
-            else if (a.properties.val > b.properties.val)
-                return -1;
-            else
-                return 0;
-        })
+        //poi.sort(function(a,b){
+        //    if (a.properties.val < b.properties.val)
+        //        return 1;
+        //    else if (a.properties.val > b.properties.val)
+        //        return -1;
+        //    else
+        //        return 0;
+        //})
 
         for(var i = 0; i < poi.length; i++){
             d3.select("#poi_" + widget.widgetId + "_" + poi[i].properties.id).moveToFront();

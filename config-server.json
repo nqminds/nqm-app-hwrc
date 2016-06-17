@@ -3,7 +3,5 @@
   "authServerURL": "https://tdx.nqminds.com",
   "RCLookupResourceId": "S1lWjFHVV",
   "baseQueryURL": "https://q.nqminds.com",
-  "baseCommandURL": "https://cmd.nqminds.com",
-  "outputDatasetSchema": "dataset",
-  "costDatasetSchema": "HccWasteCost"
+  "outputDatasetSchema": "dataset"
 }
