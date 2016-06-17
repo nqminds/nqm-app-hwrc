@@ -14,10 +14,8 @@
   var passport = require('passport');
   var Strategy = require('passport-local').Strategy;
   var ensureAuthenticated = require('connect-ensure-login').ensureLoggedIn;
-  var multer = require("multer");
-  var bodyParser = multer({ dest: "uploads/" });
-  var TDXApi = require("./lib/tdx-api");
-  var tdxAPI = new TDXApi(config); 
+  var bodyParser = require("multer")({ dest: "uploads/" });
+  var tdxAPI = new (require("./lib/tdx-api"))(config); 
 
   // Configure the local strategy for use by Passport.
   //
@@ -64,15 +62,22 @@
 
   // Default route.
   app.get("/", ensureAuthenticated(), function(req, res) {
-    res.redirect(util.format("/model/%s?pipeline=[]", req.session.outputDS));
+  // Redirect to model view if datasets are available,
+  // otherwise redirect to settings.
+    if (req.session.outputDS && req.session.costDS) {
+      res.redirect(util.format("/model/%s?pipeline=[]", req.session.outputDS));
+    } else {
+      res.redirect("/settings");
+    }    
   });
 
+  // Login route.
   app.get("/login", function(req,res) {
     res.render("login");
   });
-
   app.post("/login", bodyParser.single(), passport.authenticate("local",{ successReturnToOrRedirect: "/settings", failureRedirect: "/login" }));
 
+  // Settings route helper.
   var renderSettings = function(req, res, feedback) {
     tdxAPI.query("datasets",{ "schemaDefinition.basedOn": config.outputDatasetSchema }, { name: 1, id: 1, _id: 0 }, null, function(err, qres, outputDatasets) {
       if (err) {
@@ -98,10 +103,8 @@
     });
   };
 
-  app.get("/settings", ensureAuthenticated(), function(req,res) {
-    renderSettings(req,res);
-  });
-
+  // Settings route.
+  app.get("/settings", ensureAuthenticated(), function(req,res) { renderSettings(req,res); });
   app.post("/settings", ensureAuthenticated(), bodyParser.single(), function(req, res) {
     req.session.outputDS = req.body.outputDS;
     req.session.costDS = req.body.costDS;
@@ -113,10 +116,8 @@
     }
   });
 
-  app.get("/cost-upload", function(req, res) {
-    res.render("cost-upload");
-  });
-
+  // Cost dataset upload handling.
+  app.get("/cost-upload", function(req, res) { res.render("cost-upload"); });
   app.post("/cost-upload", bodyParser.single("costs"), function(req, res) {
     var costUpload = require("./lib/cost-upload");
     costUpload.importCostData(tdxAPI, req.session.costDS, req.file, function(err) {
@@ -130,16 +131,18 @@
     });        
   });
 
+  // Logout route.
   app.get("/logout", function(req,res) {
     req.logout();
     res.redirect("/");
   });
 
+  // Model route - HTML render.
   var tableViewRoute = function(req, res) {
     // Get request parameters.
     var resourceId = req.params.resourceId;     // resource Id    
     var pipelineParam = req.query.pipeline;     // pipeline details
-    var nidMode = !!req.session.nidMode; //req.query.nidMode === "true"; // nid display mode
+    var nidMode = !!req.session.nidMode;        // nid display mode
 
     aggregateTableFactory(resourceId, pipelineParam, nidMode, function(err, data) {
       if (err) {
@@ -150,11 +153,12 @@
     });    
   };
 
+  // Model route - download to CSV.
   var csvRoute = function(req, res) {
     // Get request parameters.
     var resourceId = req.params.resourceId;     // resource Id    
     var pipelineParam = req.query.pipeline;     // pipeline details
-    var nidMode = !!req.session.nidMode; //req.query.nidMode === "true"; // nid display mode
+    var nidMode = !!req.session.nidMode;        // nid display mode
 
     aggregateTableFactory(resourceId, pipelineParam, nidMode, function(err, data) {
       if (err) {
