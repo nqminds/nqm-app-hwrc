@@ -1,0 +1,9 @@
+extends ./layout.pug
+
+block content
+  script.
+    $(function() {
+      setTimeout(function() {
+        window.location = "/";
+      },1000);
+    });

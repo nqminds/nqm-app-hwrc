@@ -14,6 +14,10 @@
   var passport = require('passport');
   var Strategy = require('passport-local').Strategy;
   var ensureAuthenticated = require('connect-ensure-login').ensureLoggedIn;
+  var multer = require("multer");
+  var bodyParser = multer({ dest: "uploads/" });
+  var TDXApi = require("./lib/tdx-api");
+  var tdxAPI = new TDXApi(config); 
 
   // Configure the local strategy for use by Passport.
   //
@@ -23,30 +27,22 @@
   // will be set at `req.user` in route handlers after authentication.
   passport.use(new Strategy(
     function(username, password, cb) {
-      db.users.findByUsername(username, function(err, user) {
-        if (err) { return cb(err); }
-        if (!user) { return cb(null, false); }
-        if (user.password != password) { return cb(null, false); }
-        return cb(null, user);
-      });
-    }));
-
+      tdxAPI.authenticate(username, password, cb);
+    }
+  ));
 
   // Configure Passport authenticated session persistence.
-  //
-  // In order to restore authentication state across HTTP requests, Passport needs
-  // to serialize users into and deserialize users out of the session.  The
-  // typical implementation of this is as simple as supplying the user ID when
-  // serializing, and querying the user record by ID from the database when
-  // deserializing.
   passport.serializeUser(function(user, cb) {
-    cb(null, user.id);
+    // Just perist the access token.
+    process.nextTick(function() {
+      cb(null, user.access_token);
+    });    
   });
 
   passport.deserializeUser(function(id, cb) {
-    db.users.findById(id, function (err, user) {
-      if (err) { return cb(err); }
-      cb(null, user);
+    // Pass on the access token as is.
+    process.nextTick(function() {
+      cb(null, id);
     });
   });
 
@@ -56,7 +52,7 @@
   app.set('view engine', 'pug');
 
   app.use(require('cookie-parser')());
-  app.use(require('body-parser').urlencoded({ extended: true }));
+  // app.use(require('body-parser').urlencoded({ extended: true }));
 
   // Initialise session
   app.use(require("express-session")({ secret: "0928jkafja*()", resave: false, saveUninitialized: false }));
@@ -66,54 +62,50 @@
   app.use(passport.initialize());
   app.use(passport.session());
 
-  var checkAuthenticatedTDX = function(req, res, next) {
-    if (req.session.authenticated) {
-      return next();
-    }
-    var authURL = util.format("%s/auth?rurl=%s/auth", config.authServerURL, config.rootURL);
-    res.redirect(authURL);
-  };
-
-  var checkAuthenticatedBasic = function(req, res, next) {
-    var basicAuth = require("basic-auth");
-    if (req.session.authenticated) {
-      return next();
-    }
-    var authData = basicAuth(req);
-    if (authData) {
-      var options = {
-        headers: { "Authorization": "Basic " + authData.name + ":" + authData.pass }
-      };
-      request.post("http://q.nqminds.com/token", options, { json: true, grant_type: "client_credentials"}, function(err, qreq, qres) {
-        if (qres.statusCode === 200) {
-          next();
-        } else {
-          res.set("WWW-Authenticate", "Basic realm=Authorization required");
-          res.sendStatus(401);
-        }
-      });
-    } else {
-      res.set("WWW-Authenticate", "Basic realm=Authorization required");
-      res.sendStatus(401);
-    }
-  };
-
-  app.get("/auth", function(req,res) {
-    // Auth server redirects here with access token.
-    req.session.authenticated = req.query.access_token;
-    res.redirect("/");
+  // Default route.
+  app.get("/", ensureAuthenticated(), function(req, res) {
+    res.render("default", { outputDS: req.session.outputDS, costDS: req.session.costDS });
   });
 
-  // Default route.
-  app.get("/", ensureAuthenticated, function(req, res) {
-    request.get("http://q.nqminds.com/v1/datasets/S1xAEmTT-/data?access_token=" + req.session.authenticated, function(req, resp) {
-      if (resp.statusCode !== 200) {
-        log("FAILED: " + resp.body);
+  app.get("/login", function(req,res) {
+    res.render("login");
+  });
+
+  app.post("/login", bodyParser.single(), passport.authenticate("local",{ successReturnToOrRedirect: "/choose", failureRedirect: "/login" }));
+
+  var renderChooser = function(req, res, feedback) {
+    tdxAPI.query("datasets",{ "schemaDefinition.basedOn": config.outputDatasetSchema }, { name: 1, id: 1, _id: 0 }, null, function(err, qres, body) {
+      res.render("choose", { datasets: body, outputDS: req.session.outputDS, costDS: req.session.costDS, feedback: feedback || "" });
+    });
+  };
+
+  app.get("/choose", ensureAuthenticated(), renderChooser);
+
+  app.post("/choose", ensureAuthenticated(), bodyParser.single(), function(req, res) {
+    req.session.outputDS = req.body.outputDS;
+    req.session.costDS = req.body.costDS;
+    if (!req.session.outputDS || !req.session.costDS) {
+      renderChooser(req, res, "please select datasets");
+    } else {
+      res.redirect(util.format("/model/%s?pipeline=[]", req.session.outputDS));
+    }
+  });
+
+  app.get("/cost-upload", function(req, res) {
+    res.render("cost-upload");
+  });
+
+  app.post("/cost-upload", bodyParser.single("costs"), function(req, res) {
+    var costUpload = require("./lib/cost-upload");
+    costUpload.importCostData(tdxAPI, req.session.costDS, req.file, function(err) {
+      if (err) {
+        log("failed to import %s [%s]", err.message);
+        res.render("cost-upload",{ feedback: err.message });
       } else {
-        log("got data: %j", resp.body);
+        log("%s imported successfully", req.file.path);
+        res.redirect("/");
       }
-      res.render("default");
-    }); 
+    });        
   });
 
   var tableViewRoute = function(req, res) {
@@ -176,10 +168,10 @@
       aggregateTableFactory = require("./lib/aggregateTableFactory")(rcLookupTable);
 
       // Setup aggregate table route.
-      app.get("/model/:resourceId", tableViewRoute);
+      app.get("/model/:resourceId", ensureAuthenticated(), tableViewRoute);
 
       // Setup csv aggregate table route.
-      app.get("/model/csv/:resourceId", csvRoute);
+      app.get("/model/csv/:resourceId", ensureAuthenticated(), csvRoute);
 
       // Start the server.
       var port = argv.port || 7777;

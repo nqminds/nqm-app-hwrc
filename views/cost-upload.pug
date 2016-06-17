@@ -1,0 +1,26 @@
+extends ./layout.pug
+
+block content
+  script.
+    $(function() {
+      $("select").material_select();
+    });
+
+  form(method="POST", enctype="multipart/form-data")
+    .row
+      .col.s12
+        h5 upload cost data
+    .row
+      .col.s12.file-field.input-field
+        .btn
+          span select csv
+          input(type="file",name="costs")
+        .file-path-wrapper
+          input.file-path.validate(type="text")
+    .row
+      .col.s12.input-field
+        button(type="submit", name="action").btn.waves-effect.waves-light upload
+    .row
+      .col.s12.input-field
+        span.red-text #{feedback}
+          

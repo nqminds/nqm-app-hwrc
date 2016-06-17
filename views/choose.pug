@@ -1,0 +1,32 @@
+extends ./layout.pug
+
+block content
+  script.
+    $(function() {
+      $("select").material_select();
+    });
+
+  form(method="POST", enctype="multipart/form-data")
+    .row
+      .col.s12
+        h5 configure data sources
+    .row
+      .col.s12.input-field
+        select(name="outputDS")
+          option(value="", disabled=1, selected=!outputDS) select...
+          each dataset in datasets            
+            option(value=dataset.id, selected=(outputDS==dataset.id)) #{dataset.name}
+        label Choose output dataset
+    .row
+      .col.s12.input-field
+        select(name="costDS")
+          option(value="", disabled=1, selected=!costDS) select...
+          each dataset in datasets
+            option(value=dataset.id, selected=(costDS==dataset.id)) #{dataset.name}
+        label Choose cost dataset        
+    .row
+      .col.s12.input-field
+        button(type="submit", name="action").btn.waves-effect.waves-light select
+    .row
+      .col.s12.input-field
+        span.red-text #{feedback}
