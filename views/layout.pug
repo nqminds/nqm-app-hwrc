@@ -17,6 +17,8 @@ html
     script(type="text/javascript", src="/materialize-css/js/materialize.min.js")
 
     script(type='text/javascript', src='/js/EventEmitter-VERSION.min.js')
+    script.
+      var ee = new EventEmitter();
 
 
 
@@ -30,6 +32,10 @@ html
     script(src="/js/initMap.js")
 
     script.
+      var hwrcLookup = !{JSON.stringify(hwrcLookup)};
+
+
+    script.
       $(function() {
         $(".button-collapse").sideNav();
       });
@@ -37,7 +43,7 @@ html
     .navbar-fixed
       nav.teal.lighten-2
         .nav-wrapper
-          a.brand-logo(href='#!') &nbsp;HCC Waste Model             
+          a.brand-logo(href='#!') &nbsp;HWRC Scenario Planning Tool
             a.button-collapse(href='#', data-activates='mobile-menu') 
               i.material-icons menu
             ul.right.hide-on-med-and-down

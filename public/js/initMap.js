@@ -64,7 +64,9 @@ var get_district_data = function(callback){
 
             $.ajax(district_rank_url).done(function (res) {
 
-                var ranks = res.data[0].All_Values.sort();
+                var ranks = res.data[0].All_Values.sort(function(a,b){return a - b});
+
+
 
                 //remove 0s from ranks array
                 while (ranks[0] == 0) {
@@ -88,6 +90,62 @@ var get_district_data = function(callback){
                 }
 
                 callback(data, ranks);
+
+            })
+        })
+    }
+
+};
+
+
+var get_nid_data = function(callback){
+
+    var sid = $("#sid_map_select").val();
+    var nid = $("#nid_map_select").val();
+
+    //if(sid == null){sid = "2015"}
+    //if(nid == null){nid = "11111111111111111111111111"}
+
+    if(sid == null || nid == null){
+        callback([])
+    } else {
+
+        var datasetId = $("#dataset_id").val();
+
+        //var unit = $("input[name='map_data_group']:checked").val();
+        var unit = "Cost";
+
+        var total_cost_url = 'https://q.nqminds.com/v1/datasets/'
+            + datasetId
+            + '/aggregate?pipeline=[{"$match":{"$and":[{"SID":"'
+            + sid
+            + '"},{"NID":"'
+            + nid
+            + '"}]}},{"$group":{"_id":null,"Total_Cost":{"$sum":"$'
+            + unit
+            + '"}}}]';
+
+        var cost_rank_url = 'https://q.nqminds.com/v1/datasets/'
+            + datasetId
+            + '/aggregate?pipeline=[{"$match":{"$and":[{"SID":"'
+            + sid
+            + '"}]}},{"$group":{"_id":{"NID":"$NID"},"Values":{"$sum":"$'
+            + unit
+            + '"}}},{"$group":{"_id":"null","All_Values":{"$push":"$Values"}}}]';
+
+
+        $.ajax(total_cost_url).done(function (res) {
+
+            var total_cost = res.data[0].Total_Cost;
+
+            $.ajax(cost_rank_url).done(function (res) {
+
+                var ranks = res.data[0].All_Values.sort(function(a,b){return a - b});
+
+                var rank = ranks.indexOf(total_cost);
+                var ranks_count = ranks.length;
+
+                callback(total_cost, rank, ranks_count);
 
             })
         })
@@ -233,7 +291,7 @@ window.onload = function() {
 
 
 
-    var boundary_datasetId = "EybZ0ametx";
+    var boundary_datasetId = "SylXzM7_N";
     build_boundary_url(boundary_datasetId, function(res){
         checkList_wasteMap._check("boundaryUrl", res)
     });

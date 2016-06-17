@@ -21,7 +21,16 @@ var oCheck = [
     {id: "#tonnage-box", key:"Tonnage", type: "sum"},
     {id: "#delta_tonnage-box", key:"Delta_Tonnage", type: "sum"},
     {id: "#cost-box", key:"Cost", type: "sum"},
-    {id: "#delta_cost-box", key:"Delta_Cost", type: "sum"}
+    {id: "#delta_cost-box", key:"Delta_Cost", type: "sum"},
+    {id: "#winter-box", key:"Winter", type: "sum"},
+    {id: "#Monday-box", key:"Monday", type: "sum"},
+    {id: "#Tuesday-box", key:"Tuesday", type: "sum"},
+    {id: "#Wednesday-box", key:"Wednesday", type: "sum"},
+    {id: "#Thursday-box", key:"Thursday", type: "sum"},
+    {id: "#Friday-box", key:"Friday", type: "sum"},
+    {id: "#Saturday-box", key:"Saturday", type: "sum"},
+    {id: "#Sunday-box", key:"Sunday", type: "sum"},
+
 ];
 
 var oMapOptions = [
@@ -64,8 +73,28 @@ var populate_select = function(options_index, oOptions, callback){
     var path = window.location.pathname;
 
         $.ajax("https://q.nqminds.com/v1/datasets" + path + "distinct?key=" + oOptions[options_index].key).done(function(res){
+
             for(var data_index in res.data){
-                $(oOptions[options_index].id).append($('<option>', {value: res.data[data_index],  text: res.data[data_index]}))
+
+                var value = res.data[data_index];
+                var text = res.data[data_index];
+
+                //replace nid with names
+                if(oOptions[options_index].key=="NID"){
+
+                    text = "";
+                     for (var i = 0; i < value.length; i++) {
+                        if(value[i] == "0"){
+                            text += hwrcLookup[i].HWRC + ", "
+                        }
+                    }
+                    if(text.length > 0){
+                        text = text.slice(0, -2)
+                    }
+                    text = "(" + text + ")"
+                }
+
+                $(oOptions[options_index].id).append($('<option>', {value: value,  text: text}))
             }
             callback(options_index, oOptions)
 
@@ -276,13 +305,56 @@ var populate_map_form = function(){
 
     next_select(0, oMapOptions, function(res){
 
-        get_district_data(function(districtData){
-            get_hwrc_data(function(poiData){
-                ee.emitEvent("update_map", [districtData, poiData]);
+        get_district_data(function(districtData, districtRanks){
+            get_hwrc_data(function(poiData, poiMax){
+                ee.emitEvent("update_map", [districtData, districtRanks, poiData, poiMax]);
             })
         })
 
 
     });
 };
+
+var update_map_nid = function(bit_index){
+
+    var current_nid = $("#nid_map_select").val();
+
+    var bit = current_nid.charAt(bit_index);
+    if(bit == 0){
+        bit = 1;
+    } else {
+        bit = 0;
+    }
+
+    var new_nid = current_nid.substr(0, bit_index) + bit + current_nid.substr(bit_index + 1 );
+
+
+    oSelect = document.getElementById("nid_map_select");
+    for(var i = 0; i < oSelect.length; i++) {
+        if(oSelect.options[i].value == new_nid) {
+            oSelect.options[i].selected = true;
+
+            $('select:not([multiple])').material_select();
+
+            get_district_data(function(districtData, districtRanks){
+                get_hwrc_data(function(poiData, poiMax){
+                    ee.emitEvent("update_map", [districtData, districtRanks, poiData, poiMax]);
+                });
+            });
+            get_nid_data(function(total_cost, rank, ranks_count){
+                ee.emitEvent("update_map_text", [total_cost, rank, ranks_count])
+            });
+
+
+        }
+
+
+    }
+
+
+
+
+};
+
+ee.addListener("update_map_nid", update_map_nid);
 
