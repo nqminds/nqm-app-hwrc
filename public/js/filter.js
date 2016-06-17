@@ -73,8 +73,28 @@ var populate_select = function(options_index, oOptions, callback){
     var path = window.location.pathname;
 
         $.ajax("https://q.nqminds.com/v1/datasets" + path + "distinct?key=" + oOptions[options_index].key).done(function(res){
+
             for(var data_index in res.data){
-                $(oOptions[options_index].id).append($('<option>', {value: res.data[data_index],  text: res.data[data_index]}))
+
+                var value = res.data[data_index];
+                var text = res.data[data_index];
+
+                //replace nid with names
+                if(oOptions[options_index].key=="NID"){
+
+                    text = "";
+                     for (var i = 0; i < value.length; i++) {
+                        if(value[i] == "0"){
+                            text += hwrcLookup[i].HWRC + ", "
+                        }
+                    }
+                    if(text.length > 0){
+                        text = text.slice(0, -2)
+                    }
+                    text = "(" + text + ")"
+                }
+
+                $(oOptions[options_index].id).append($('<option>', {value: value,  text: text}))
             }
             callback(options_index, oOptions)
 

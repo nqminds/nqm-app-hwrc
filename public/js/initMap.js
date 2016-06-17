@@ -138,8 +138,6 @@ var get_nid_data = function(callback){
 
             var total_cost = res.data[0].Total_Cost;
 
-            console.log(total_cost)
-
             $.ajax(cost_rank_url).done(function (res) {
 
                 var ranks = res.data[0].All_Values.sort(function(a,b){return a - b});
