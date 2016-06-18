@@ -7,7 +7,6 @@
   var express = require('express');
   var app = express();
   var util = require("util");
-  var config = require("./config");
   var request = require("request");
   var aggregateTableFactory = null;
   var _ = require("lodash"); 
@@ -15,8 +14,13 @@
   var Strategy = require('passport-local').Strategy;
   var ensureAuthenticated = require('connect-ensure-login').ensureLoggedIn;
   var bodyParser = require("multer")({ dest: "uploads/" });
-  var tdxAPI = new (require("./lib/tdx-api"))(config); 
-
+  var config = require("./config");
+  // var tdxAPI = new (require("./lib/tdxAPI"))(config);
+  var tdxAPI = require("nqm-api-tdx");
+   
+  var settings = require("./lib/settings")(config, tdxAPI);
+  var costUpload = require("./lib/costUpload")(config, tdxAPI);
+  
   // Configure the local strategy for use by Passport.
   //
   // The local strategy require a `verify` function which receives the credentials
@@ -62,8 +66,8 @@
 
   // Default route.
   app.get("/", ensureAuthenticated(), function(req, res) {
-  // Redirect to model view if datasets are available,
-  // otherwise redirect to settings.
+    // Redirect to model view if datasets are available,
+    // otherwise redirect to settings.
     if (req.session.outputDS && req.session.costDS) {
       res.redirect(util.format("/model/%s?pipeline=[]", req.session.outputDS));
     } else {
@@ -72,121 +76,25 @@
   });
 
   // Login route.
-  app.get("/login", function(req,res) {
-    res.render("login");
-  });
-  app.post("/login", bodyParser.single(), passport.authenticate("local",{ successReturnToOrRedirect: "/settings", failureRedirect: "/login" }));
-
-  // Settings route helper.
-  var renderSettings = function(req, res, feedback) {
-    tdxAPI.query("datasets",{ "schemaDefinition.basedOn": config.outputDatasetSchema }, { name: 1, id: 1, _id: 0 }, null, function(err, qres, outputDatasets) {
-      if (err) {
-        outputDatasets = [ { name: "failed to query TDX" }];
-      } else if (outputDatasets.length === 1) {
-        req.session.outputDS = outputDatasets[0].id;
-      }
-      tdxAPI.query("datasets",{ "schemaDefinition.basedOn": config.costDatasetSchema }, { name: 1, id: 1, _id: 0 }, null, function(err, qres, costDatasets) {
-        if (err) {
-          costDatasets = [ { name: "failed to query TDX" }];
-        } else if (costDatasets.length === 1) {
-          req.session.costDS = costDatasets[0].id;
-        }
-        res.render("settings", { 
-          outputDatasets: outputDatasets, 
-          costDatasets: costDatasets, 
-          outputDS: req.session.outputDS, 
-          costDS: req.session.costDS,
-          showOpen: req.session.nidMode, 
-          feedback: feedback || "" 
-        });
-      });
-    });
-  };
+  app.route("/login")
+    .get(function(req,res) { res.render("login"); })
+    .post(bodyParser.single(), passport.authenticate("local",{ successReturnToOrRedirect: "/settings", failureRedirect: "/login" }));
 
   // Settings route.
-  app.get("/settings", ensureAuthenticated(), function(req,res) { renderSettings(req,res); });
-  app.post("/settings", ensureAuthenticated(), bodyParser.single(), function(req, res) {
-    req.session.outputDS = req.body.outputDS;
-    req.session.costDS = req.body.costDS;
-    req.session.nidMode = req.body.showOpen === "open" ? true : false; 
-    if (!req.session.outputDS || !req.session.costDS) {
-      renderSettings(req, res, "please select datasets");
-    } else {
-      res.redirect(util.format("/model/%s?pipeline=[]", req.session.outputDS));
-    }
-  });
+  app.route("/settings")
+    .get(ensureAuthenticated(), settings.render)
+    .post(ensureAuthenticated(), bodyParser.single(), settings.save);
 
   // Cost dataset upload handling.
-  app.get("/cost-upload", function(req, res) { res.render("cost-upload"); });
-  app.post("/cost-upload", bodyParser.single("costs"), function(req, res) {
-    var costUpload = require("./lib/cost-upload");
-    costUpload.importCostData(tdxAPI, req.session.costDS, req.file, function(err) {
-      if (err) {
-        log("failed to import %s [%s]", err.message);
-        res.render("cost-upload",{ feedback: err.message });
-      } else {
-        log("%s imported successfully", req.file.path);
-        res.redirect("/");
-      }
-    });        
-  });
+  app.route("/cost-upload")
+    .get(ensureAuthenticated(), costUpload.render)
+    .post(ensureAuthenticated(), bodyParser.single("costs"), costUpload.save);
 
   // Logout route.
   app.get("/logout", function(req,res) {
     req.logout();
     res.redirect("/");
   });
-
-  // Model route - HTML render.
-  var tableViewRoute = function(req, res) {
-    // Get request parameters.
-    var resourceId = req.params.resourceId;     // resource Id    
-    var pipelineParam = req.query.pipeline;     // pipeline details
-    var nidMode = !!req.session.nidMode;        // nid display mode
-
-    aggregateTableFactory(resourceId, pipelineParam, nidMode, function(err, data) {
-      if (err) {
-        res.status(400).send(err.message);
-      } else {
-        res.render("aggregateTable", data);
-      }
-    });    
-  };
-
-  // Model route - download to CSV.
-  var csvRoute = function(req, res) {
-    // Get request parameters.
-    var resourceId = req.params.resourceId;     // resource Id    
-    var pipelineParam = req.query.pipeline;     // pipeline details
-    var nidMode = !!req.session.nidMode;        // nid display mode
-
-    aggregateTableFactory(resourceId, pipelineParam, nidMode, function(err, data) {
-      if (err) {
-        res.status(400).send(err.message);
-      } else {
-        // Set file name for download, and content type.
-        res.setHeader("Content-disposition", "attachment; filename=hwrc-model.csv");
-        res.set("Content-Type", "text/csv" );        
-        
-        // Write a heading for each column.
-        _.forEach(data.columns, function(column) {
-          res.write(column.title + ",");
-        });
-        res.write("\r\n");
-
-        // Write each row of data.
-        _.forEach(data.data, function(row) {
-          _.forEach(data.columns, function(column) {
-            // Use Array.reduce to lookup the json path, e.g. evaluate row["_id.SID"]
-            res.write(util.format("\"%s\",",column.key.split(".").reduce(function(obj, key) { return obj[key] }, row)));
-          });
-          res.write("\r\n");
-        });
-
-        res.status(200).end();
-      }
-    });    
-  };
 
   // Load the RC lookup and build a hash-table for fast lookup.
   log("loading lookup resource");
@@ -199,10 +107,10 @@
       aggregateTableFactory = require("./lib/aggregateTableFactory")(rcLookupTable);
 
       // Setup aggregate table route.
-      app.get("/model/:resourceId", ensureAuthenticated(), tableViewRoute);
+      app.get("/model/:resourceId", ensureAuthenticated(), aggregateTableFactory.tableViewRoute);
 
       // Setup csv aggregate table route.
-      app.get("/model/csv/:resourceId", ensureAuthenticated(), csvRoute);
+      app.get("/model/:resourceId/csv", ensureAuthenticated(), aggregateTableFactory.csvRoute);
 
       // Start the server.
       var port = argv.port || 7777;
