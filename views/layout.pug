@@ -8,8 +8,8 @@ html
     // Let browser know website is optimized for mobile
     meta(name="viewport", content="width=device-width, initial-scale=1.0")
     // Import app styles.
-    link(href="/styles.css",type="text/css",rel="stylesheet")    
-    link(href="/widgets.css",type="text/css",rel="stylesheet")
+    link(href="/styles.css", type="text/css", rel="stylesheet")    
+    link(href="/widgets.css", type="text/css", rel="stylesheet")
     block title
       title HWRC Planning
   body
@@ -19,8 +19,6 @@ html
     script(type='text/javascript', src='/js/EventEmitter-VERSION.min.js')
     script.
       var ee = new EventEmitter();
-
-
 
     script(src="http://d3js.org/d3.v3.min.js")
     script(src= "http://d3js.org/topojson.v1.min.js")
@@ -34,8 +32,6 @@ html
     script.
       var hwrcLookup = !{JSON.stringify(hwrcLookup)};
 
-
-    script.
       $(function() {
         $(".button-collapse").sideNav();
       });
@@ -46,11 +42,13 @@ html
           a.brand-logo(href='#!') &nbsp;HWRC Scenario Planning Tool
             a.button-collapse(href='#', data-activates='mobile-menu') 
               i.material-icons menu
+            ul.right
+              block staticNavMenu
             ul.right.hide-on-med-and-down
               //- Allow page-specific navbar options
               block rightNavMenu
-            ul#mobile-menu.side-nav
+            ul.side-nav#mobile-menu
               //- Allow page-specific navbar options
               block rightNavMenuMobile
-    div.row
+    .row
     block content   

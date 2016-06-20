@@ -1,0 +1,54 @@
+extends ./layout.pug
+
+block staticNavMenu
+  li
+    a(href="/")
+      i.material-icons close
+
+block content
+  script.
+    $(function() {
+      $("select").material_select();
+    });
+
+  form(method="POST", enctype="multipart/form-data")
+    .row
+      .col.s12
+        h5 configure data sources
+    .row
+      .col.s6.input-field
+        select(name="outputDS")
+          option(value="", disabled=1, selected=!outputDS) select...
+          each dataset in outputDatasets            
+            option(value=dataset.id, selected=(outputDS==dataset.id)) #{dataset.name}
+        label Choose output dataset
+    .row
+      .col.s6.input-field
+        select(name="costDS")
+          option(value="", disabled=1, selected=!costDS) select...
+          each dataset in costDatasets
+            option(value=dataset.id, selected=(costDS==dataset.id)) #{dataset.name}
+        label Choose cost dataset
+      .col.s6.input-field
+        if (costDS)
+          a(href="/cost-upload").btn.waves-effect.waves-light new cost data
+        else
+          a(href="/cost-upload").btn.disabled new cost data
+    .row
+      .col.s12
+        h5 grid view
+    .row
+      .col.s12
+        input(type="radio", name="showOpen", value="open", checked=showOpen)#showOpen
+        label(for="showOpen") show open recycling centres
+        p
+          input(type="radio", name="showOpen", value="closed", checked=!showOpen)#showClosed
+          label(for="showClosed") show closed recycling centres
+
+    .row
+      .col.s6.input-field
+        button(type="submit", name="action").btn.waves-effect.waves-light save        
+    .row
+      .col.s12.input-field
+        span.red-text #{feedback}
+

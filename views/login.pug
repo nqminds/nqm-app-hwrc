@@ -1,0 +1,22 @@
+extends ./layout.pug
+
+block content
+  script.
+    $(function() {
+    });
+
+  form(method="POST", enctype="multipart/form-data")
+    .row
+      .col.s12
+        h5 login
+    .row
+      .col.s12.input-field
+        input(placeholder="username", type="text",name="username").validate#username
+        label(for="username") username
+    .row
+      .col.s12.input-field
+        input(placeholder="password", type="password", name="password").validate#password
+        label(for="password") password
+    .row
+      .col.s12.input-field
+        button(type="submit", name="action").btn.waves-effect.waves-light login
