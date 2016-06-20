@@ -15,9 +15,7 @@
   var ensureAuthenticated = require('connect-ensure-login').ensureLoggedIn;
   var bodyParser = require("multer")({ dest: "uploads/" });
   var config = require("./config");
-  // var tdxAPI = new (require("./lib/tdxAPI"))(config);
-  var queryAPI = require("nqm-api-tdx").Query(config.baseQueryURL);
-  var commandAPI = require("nqm-api-tdx").Command(config.baseCommandURL);
+  var tdxAPI = (new (require("nqm-api-tdx"))(config));
 
   var settings = require("./lib/settings")(config, tdxAPI);
   var costUpload = require("./lib/costUpload")(config, tdxAPI);
@@ -38,7 +36,7 @@
   passport.serializeUser(function(user, cb) {
     // Just perist the access token.
     process.nextTick(function() {
-      cb(null, user.access_token);
+      cb(null, user);
     });    
   });
 
