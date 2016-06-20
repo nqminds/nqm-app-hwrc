@@ -112,7 +112,7 @@
       app.get("/model/:resourceId/csv", ensureAuthenticated(), aggregateTableFactory.csvRoute);
 
       // Start the server.
-      var port = argv.port || 7777;
+      var port = argv.port || 8888;
       app.listen(port, function () {
         log("Listening on port " + port);
       });              
