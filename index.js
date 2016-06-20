@@ -16,8 +16,9 @@
   var bodyParser = require("multer")({ dest: "uploads/" });
   var config = require("./config");
   // var tdxAPI = new (require("./lib/tdxAPI"))(config);
-  var tdxAPI = require("nqm-api-tdx");
-   
+  var queryAPI = require("nqm-api-tdx").Query(config.baseQueryURL);
+  var commandAPI = require("nqm-api-tdx").Command(config.baseCommandURL);
+
   var settings = require("./lib/settings")(config, tdxAPI);
   var costUpload = require("./lib/costUpload")(config, tdxAPI);
   
