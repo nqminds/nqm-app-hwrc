@@ -12,3 +12,15 @@ html, body {
 }
 
 
+.filterAlert{
+  background-color: red;
+}
+
+#progress {
+  text-align: center;
+}
+
+#wait_icon {
+  margin-left: 50%;
+}
+

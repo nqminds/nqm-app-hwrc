@@ -1,0 +1,38 @@
+extends ./layout.pug
+block content
+
+    script.
+        $(function () {
+
+            setInterval(function() {
+
+                $.ajax("/progress").done(function (res) {
+
+                    if(res == "done"){
+                        window.location = "/"
+                    } else {
+                        var width = res.progress + "%"
+                        $("#progress").text(res.progressString)
+                        $("#progressBar").css('width', width)
+                        $("#progressIcon").css('margin-left', width)
+                    }
+
+                })
+
+            }, 2000);
+
+        });
+
+    .row
+
+    .row
+            i.large.material-icons#progressIcon(style='margin-left: 0%')  directions_run
+
+
+    .row
+        .col.s12
+            .progress
+                .determinate#progressBar(style='width: 0%')
+
+    .row
+         h5#progress costs starting...

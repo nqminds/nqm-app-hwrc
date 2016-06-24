@@ -55,13 +55,13 @@ block content
     .col.s12
       ul.tabs
         li.tab.col.s3
-          a(href="#filter")
-            i.material-icons.hwrc-tab-icon filter_list
-            | filter
-        li.tab.col.s3
           a(href="#grid")
             i.material-icons.hwrc-tab-icon grid_on
             | grid
+        li.tab.col.s3
+          a(href="#filter")
+            i.material-icons.hwrc-tab-icon filter_list
+            | filter
         li.tab.col.s3
           a(href="#map")
             i.material-icons.hwrc-tab-icon place
@@ -123,6 +123,7 @@ block content
             input#contract-box.filled-in(type='checkbox')
             label(for='contract-box').check_space Contract
 
+        .row Data
         .row
           .col.s2
             input#tonnage-box.filled-in(type='checkbox')
@@ -137,6 +138,7 @@ block content
             input#delta_cost-box.filled-in(type='checkbox')
             label(for='delta_cost-box').check_space Delta Cost
 
+        .row Displaced data
         .row
           .col.s2
             input#winter-box.filled-in(type='checkbox')

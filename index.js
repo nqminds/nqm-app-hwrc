@@ -18,8 +18,13 @@
   var tdxAPI = (new (require("nqm-api-tdx"))(config));
 
   var settings = require("./lib/settings")(config, tdxAPI);
+
   var costUpload = require("./lib/costUpload")(config, tdxAPI);
-  
+
+
+
+
+
   // Configure the local strategy for use by Passport.
   //
   // The local strategy require a `verify` function which receives the credentials
@@ -68,11 +73,12 @@
     // Redirect to model view if datasets are available,
     // otherwise redirect to settings.
     if (req.session.outputDS && req.session.costDS) {
-      res.redirect(util.format("/model/%s?pipeline=[]", req.session.outputDS));
+      res.redirect(util.format('/model/%s?pipeline=[]', req.session.outputDS));
     } else {
       res.redirect("/settings");
     }    
   });
+
 
   // Login route.
   app.route("/login")
@@ -88,6 +94,11 @@
   app.route("/cost-upload")
     .get(ensureAuthenticated(), costUpload.render)
     .post(ensureAuthenticated(), bodyParser.single("costs"), costUpload.save);
+
+
+  //Cost output dataset calculation handling
+  app.route("/progress")
+      .get(ensureAuthenticated(), costUpload.progress);
 
   // Logout route.
   app.get("/logout", function(req,res) {
@@ -115,6 +126,7 @@
       var port = argv.port || 8888;
       app.listen(port, function () {
         log("Listening on port " + port);
+        console.log("Listening on port " + port)
       });              
     }
   });
