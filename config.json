@@ -6,5 +6,8 @@
   "baseCommandURL": "https://cmd.nqminds.com",
   "outputDatasetSchema": "HccWasteOutputCost",
   "costDatasetSchema": "HccWasteCost",
-  "tonnageDataset":"H1eCZDVWr"
+  "tonnageDataset":"H1eCZDVWr",
+
+  "accessTokenTTL": 3600
+
 }
