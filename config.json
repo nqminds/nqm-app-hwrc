@@ -5,5 +5,6 @@
   "baseQueryURL": "https://q.nqminds.com",
   "baseCommandURL": "https://cmd.nqminds.com",
   "outputDatasetSchema": "dataset",
-  "costDatasetSchema": "HccWasteCost"
+  "costDatasetSchema": "HccWasteCost",
+  "accessTokenTTL": 3600
 }
