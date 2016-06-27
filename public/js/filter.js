@@ -72,7 +72,6 @@ var populate_select = function(options_index, oOptions, callback){
 
     var dataset = window.location.pathname.split("/")[window.location.pathname.split("/").length-1];
 
-
     $.ajax("https://q.nqminds.com/v1/datasets/" + dataset + "/distinct?key=" + oOptions[options_index].key).done(function(res){
 
         for(var data_index in res.data){
@@ -105,6 +104,7 @@ var populate_select = function(options_index, oOptions, callback){
 
 
 var populate_filter_form1 = function(){
+
 
     //populate options
     next_select(0, oOptions, function(res){
@@ -343,6 +343,8 @@ var populate_map_form = function(){
 
 var update_map_nid = function(bit_index){
 
+    console.log(Date.now())
+
     var current_nid = $("#nid_map_select").val();
 
     var bit = current_nid.charAt(bit_index);
@@ -364,6 +366,7 @@ var update_map_nid = function(bit_index){
 
             get_district_data(function(districtData, districtRanks){
                 get_hwrc_data(function(poiData, poiMax){
+                    console.log(Date.now())
                     ee.emitEvent("update_map", [districtData, districtRanks, poiData, poiMax]);
                 });
             });

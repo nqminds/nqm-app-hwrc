@@ -16,7 +16,7 @@ html, body {
   background-color: red;
 }
 
-#progress {
+#progress, #loaded {
   text-align: center;
 }
 

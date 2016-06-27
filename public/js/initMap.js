@@ -2,7 +2,8 @@
 
 var build_boundary_url = function(boundary_datasetId, callback){
 
-    var datasetId = $("#dataset_id").val();
+    var datasetId =  window.location.pathname.split("/")[window.location.pathname.split("/").length-1];
+
     var excessUrl = 'https://q.nqminds.com/v1/datasets/' + datasetId + '/distinct?filter={"Contract":"Excess"}&key=HWRC';
     $.ajax(excessUrl).done(function(res){
 
@@ -34,7 +35,7 @@ var get_district_data = function(callback){
         callback([])
     } else {
 
-        var datasetId = $("#dataset_id").val();
+        var datasetId =  window.location.pathname.split("/")[window.location.pathname.split("/").length-1];
 
         //var unit = $("input[name='map_data_group']:checked").val();
         var unit = "Cost";
@@ -110,7 +111,7 @@ var get_nid_data = function(callback){
         callback([])
     } else {
 
-        var datasetId = $("#dataset_id").val();
+        var datasetId =  window.location.pathname.split("/")[window.location.pathname.split("/").length-1];
 
         //var unit = $("input[name='map_data_group']:checked").val();
         var unit = "Cost";
@@ -210,7 +211,7 @@ var get_hwrc_data = function(callback){
         callback([])
     } else {
 
-        var datasetId = $("#dataset_id").val();
+        var datasetId =  window.location.pathname.split("/")[window.location.pathname.split("/").length-1];
 
         //var unit = $("input[name='map_data_group']:checked").val();
         var unit = "Cost"
@@ -268,7 +269,7 @@ var get_hwrc_data = function(callback){
 
 var call_wasteMap = function(data){
 
-    var datasetId = $("#dataset_id").val();
+    var datasetId =  window.location.pathname.split("/")[window.location.pathname.split("/").length-1];
 
     wasteMap = new WasteMap("wasteMap1", "#mapContainer", data)
 

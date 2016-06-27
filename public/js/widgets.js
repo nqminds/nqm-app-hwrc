@@ -247,6 +247,7 @@ WasteMap.prototype._init = function(){
 
 WasteMap.prototype._update = function(polygon_data, polygon_ranks, poi_data, poi_max){
 
+
     var self = this;
 
 

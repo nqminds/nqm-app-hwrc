@@ -11,8 +11,9 @@ block content
                     if(res == "done"){
                         window.location = "/"
                     } else {
-                        var width = res.progress + "%"
+                        var width = res.loaded + "%"
                         $("#progress").text(res.progressString)
+                        $("#loaded").text(res.loadedString)
                         $("#progressBar").css('width', width)
                         $("#progressIcon").css('margin-left', width)
                     }
@@ -36,3 +37,4 @@ block content
 
     .row
          h5#progress costs starting...
+         h5#loaded
