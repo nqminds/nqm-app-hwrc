@@ -4,7 +4,7 @@ var build_boundary_url = function(boundary_datasetId, callback){
 
     var datasetId =  window.location.pathname.split("/")[window.location.pathname.split("/").length-1];
 
-    var excessUrl = 'https://q.nqminds.com/v1/datasets/' + datasetId + '/distinct?filter={"Contract":"Excess"}&key=HWRC';
+    var excessUrl = 'https://q.nqminds.com/v1/datasets/' + datasetId + '/distinct?access_token=' + accessToken + '&filter={"Contract":"Excess"}&key=HWRC';
     $.ajax(excessUrl).done(function(res){
 
         //build the boundary url
@@ -42,7 +42,7 @@ var get_district_data = function(callback){
 
         var district_data_url = 'https://q.nqminds.com/v1/datasets/'
             + datasetId
-            + '/aggregate?pipeline=[{"$match":{"$and":[{"Contract":"Excess"},{"SID":"'
+            + '/aggregate?access_token=' + accessToken + '&pipeline=[{"$match":{"$and":[{"Contract":"Excess"},{"SID":"'
             + sid
             + '"},{"NID":"'
             + nid
@@ -52,7 +52,7 @@ var get_district_data = function(callback){
 
         var district_rank_url = 'https://q.nqminds.com/v1/datasets/'
             + datasetId
-            + '/aggregate?pipeline=[{"$match":{"$and":[{"Contract":"Excess"},{"SID":"'
+            + '/aggregate?access_token=' + accessToken + '&pipeline=[{"$match":{"$and":[{"Contract":"Excess"},{"SID":"'
             + sid
             + '"}]}},{"$group":{"_id":{"HWRC":"$HWRC","NID":"$NID"},"Values":{"$sum":"$'
             + unit
@@ -118,7 +118,7 @@ var get_nid_data = function(callback){
 
         var total_cost_url = 'https://q.nqminds.com/v1/datasets/'
             + datasetId
-            + '/aggregate?pipeline=[{"$match":{"$and":[{"SID":"'
+            + '/aggregate?access_token=' + accessToken + '&pipeline=[{"$match":{"$and":[{"SID":"'
             + sid
             + '"},{"NID":"'
             + nid
@@ -128,7 +128,7 @@ var get_nid_data = function(callback){
 
         var cost_rank_url = 'https://q.nqminds.com/v1/datasets/'
             + datasetId
-            + '/aggregate?pipeline=[{"$match":{"$and":[{"SID":"'
+            + '/aggregate?access_token=' + accessToken + '&pipeline=[{"$match":{"$and":[{"SID":"'
             + sid
             + '"}]}},{"$group":{"_id":{"NID":"$NID"},"Values":{"$sum":"$'
             + unit
@@ -218,7 +218,7 @@ var get_hwrc_data = function(callback){
 
         var data_url = 'https://q.nqminds.com/v1/datasets/'
             + datasetId
-            + '/aggregate?pipeline=[{"$match":{"$and":[{"Contract":{"$ne":"Excess"}},{"SID":"'
+            + '/aggregate?access_token=' + accessToken + '&pipeline=[{"$match":{"$and":[{"Contract":{"$ne":"Excess"}},{"SID":"'
             + sid
             + '"},{"NID":"'
             + nid
@@ -228,7 +228,7 @@ var get_hwrc_data = function(callback){
 
         var max_url = 'https://q.nqminds.com/v1/datasets/'
             + datasetId
-            + '/aggregate?pipeline=[{"$match":{"$and":[{"Contract":{"$ne":"Excess"}},{"SID":"'
+            + '/aggregate?access_token=' + accessToken + '&pipeline=[{"$match":{"$and":[{"Contract":{"$ne":"Excess"}},{"SID":"'
             + sid
             + '"}]}},{"$group":{"_id":null,"Max":{"$max":"$'
             + unit

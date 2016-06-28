@@ -20,6 +20,9 @@ block rightNavMenuMobile
 
 block content
   script.
+    var accessToken = !{JSON.stringify(accessToken)};
+
+  script.
     $(function() {
       $(".aggregateRow").click(function() {
         alert("clicked row " + this.dataset.field);
@@ -51,6 +54,9 @@ block content
       });
     });
 
+
+
+
   .row
     .col.s12
       ul.tabs
@@ -68,6 +74,7 @@ block content
             | map
     .col.s12#filter
       form#filter_form
+
         .row
         //.row Dataset:
         //.row
@@ -174,21 +181,21 @@ block content
         thead
           tr
             //- Add a header for each column.
-            each column in columns
+            each column in data.columns
               th(data-field=column.key)
                 a(href=column.sortURL) #{column.title}
                   i.right.material-icons #{column.sortIcon}
         tbody
           //- Add a row for each data item.
-          each row in data
+          each row in data.data
             tr.aggregateRow(data-field=row.__idx)
               //- Within the row, add a cell for each column heading.
-              each column in columns
+              each column in data.columns
                 //- Use Array.reduce to lookup the json path, e.g. evaluate row["_id.SID"]
                 td= column.key.split(".").reduce(function(obj, key) { return obj[key] }, row)
       .row
         .col.s12
-          if data.length > 0
+          if data.data.length > 0
             a(href="#").btn.right#csvButton download csv
 
     .col.s12#map

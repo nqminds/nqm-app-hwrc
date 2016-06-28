@@ -72,7 +72,7 @@ var populate_select = function(options_index, oOptions, callback){
 
     var dataset = window.location.pathname.split("/")[window.location.pathname.split("/").length-1];
 
-    $.ajax("https://q.nqminds.com/v1/datasets/" + dataset + "/distinct?key=" + oOptions[options_index].key).done(function(res){
+    $.ajax("https://q.nqminds.com/v1/datasets/" + dataset + "/distinct?access_token=" + accessToken + "&key=" + oOptions[options_index].key).done(function(res){
 
         for(var data_index in res.data){
 
@@ -244,7 +244,7 @@ var generate_url = function(){
 
     //hack for empty match
     //todo deal with empty match
-    if(matchFlag == false){sMatch = '{"$match":{"$and":[{"$or":[{"SID":"2015"},{"SID":"2021"}]}]}}' }
+    if(matchFlag == false){sMatch = '{"$match":{"$and":[{"$or":[{"SID":"2015"},{"SID":"2021"}]}]}},' }
 
     //console.log("match: " + sMatch)
 
@@ -343,7 +343,7 @@ var populate_map_form = function(){
 
 var update_map_nid = function(bit_index){
 
-    console.log(Date.now())
+    //document.getElementById("mapContainer").setAttribute("style","-webkit-filter:blur(2px)");
 
     var current_nid = $("#nid_map_select").val();
 
@@ -366,7 +366,7 @@ var update_map_nid = function(bit_index){
 
             get_district_data(function(districtData, districtRanks){
                 get_hwrc_data(function(poiData, poiMax){
-                    console.log(Date.now())
+                    //document.getElementById("mapContainer").setAttribute("style","-webkit-filter:blur(none)");
                     ee.emitEvent("update_map", [districtData, districtRanks, poiData, poiMax]);
                 });
             });
@@ -386,4 +386,13 @@ var update_map_nid = function(bit_index){
 };
 
 ee.addListener("update_map_nid", update_map_nid);
+
+
+ee.addListener("update_map_nid", function(){
+    document.getElementById("mapContainer").setAttribute("style","-webkit-filter:blur(2px)");
+});
+ee.addListener("update_map", function(){
+    document.getElementById("mapContainer").setAttribute("style","-webkit-filter:blur(none)");
+});
+
 

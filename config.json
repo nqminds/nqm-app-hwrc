@@ -8,6 +8,6 @@
   "costDatasetSchema": "HccWasteCost",
   "tonnageDataset":"H1eCZDVWr",
 
-  "accessTokenTTL": 3600
+  "accessTokenTTL": 86400
 
 }
