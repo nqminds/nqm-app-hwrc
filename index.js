@@ -100,6 +100,65 @@
   app.route("/progress")
       .get(ensureAuthenticated(), costUpload.progress);
 
+  //query private dataset
+  //app.get("/query/:datasetId/:method/:filter/:projection/:options", function(req, res){
+  app.get("/privateQuery/:datasetId/:command/:qString", function(req, res){
+
+    var datasetId = req.params["datasetId"];
+    var command = req.params["command"];
+    var qString = req.params["qString"];
+    var accessToken = req.user
+
+    //console.log(req.params["datasetId"] )
+    //console.log(req.params["command"] )
+    //console.log(req.params["qString"] )
+
+    var query = config.baseQueryURL +
+        "/v1/datasets/" + datasetId + "/" +
+        command + "?" + "access_token=" +  accessToken + "&" +
+        qString;
+
+    //console.log(query)
+
+    request.get(query, { json: true }, function (err, resp, body) {
+
+      if (err) {
+        res.status(400).send(err.message);
+        console.log(err)
+      } else {
+        //console.log(body)
+        res.status(200).json(body)
+      }
+
+    })
+
+
+
+
+
+    //var method = "datsets/" + req.params["datasetId"] + "/" + req.params["method"];
+    //var filter = req.params["filter"];
+    //var projection = req.params["projection"];
+    //var options = req.params["options"];
+    //
+    //var accessToken = req.user
+    //
+    //
+    //tdxAPI.query(accessToken, method, filter, projection, options, function(err, qres, dataset){
+    //
+    //  console.log("there")
+    //
+    //  if (err) {
+    //    res.status(400).send(err.message);
+    //  } else {
+    //    console.log(dataset)
+    //    res.json(err, dataset)
+    //  }
+    //
+    //})
+
+  })
+
   // Logout route.
   app.get("/logout", function(req,res) {
     req.logout();

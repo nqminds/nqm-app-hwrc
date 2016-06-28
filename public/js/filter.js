@@ -70,9 +70,14 @@ var next_select = function(options_index, oOptions, callback){
 
 var populate_select = function(options_index, oOptions, callback){
 
-    var dataset = window.location.pathname.split("/")[window.location.pathname.split("/").length-1];
+    var datasetId = window.location.pathname.split("/")[window.location.pathname.split("/").length-1];
+    var command = "distinct"
 
-    $.ajax("https://q.nqminds.com/v1/datasets/" + dataset + "/distinct?access_token=" + accessToken + "&key=" + oOptions[options_index].key).done(function(res){
+    var qString = "key=" + oOptions[options_index].key;
+
+    $.ajax("/privateQuery/" + datasetId + "/" + command + "/" + qString).done(function (res) {
+
+    //$.ajax("https://q.nqminds.com/v1/datasets/" + dataset + "/distinct?access_token=" + accessToken + "&key=" + oOptions[options_index].key).done(function(res){
 
         for(var data_index in res.data){
 

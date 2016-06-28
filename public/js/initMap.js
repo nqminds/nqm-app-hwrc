@@ -3,9 +3,11 @@
 var build_boundary_url = function(boundary_datasetId, callback){
 
     var datasetId =  window.location.pathname.split("/")[window.location.pathname.split("/").length-1];
+    var command = "distinct";
 
-    var excessUrl = 'https://q.nqminds.com/v1/datasets/' + datasetId + '/distinct?access_token=' + accessToken + '&filter={"Contract":"Excess"}&key=HWRC';
-    $.ajax(excessUrl).done(function(res){
+    var excess_query = 'filter={"Contract":"Excess"}&key=HWRC';
+
+    $.ajax("/privateQuery/" + datasetId + "/" + command + "/" + excess_query).done(function(res){
 
         //build the boundary url
         var boundaryUrl = 'https://q.nqminds.com/v1/datasets/' + boundary_datasetId + '/data?filter={"$or":[';
@@ -37,12 +39,12 @@ var get_district_data = function(callback){
 
         var datasetId =  window.location.pathname.split("/")[window.location.pathname.split("/").length-1];
 
+        var command = "aggregate";
+
         //var unit = $("input[name='map_data_group']:checked").val();
         var unit = "Cost";
 
-        var district_data_url = 'https://q.nqminds.com/v1/datasets/'
-            + datasetId
-            + '/aggregate?access_token=' + accessToken + '&pipeline=[{"$match":{"$and":[{"Contract":"Excess"},{"SID":"'
+        var district_data_query = 'pipeline=[{"$match":{"$and":[{"Contract":"Excess"},{"SID":"'
             + sid
             + '"},{"NID":"'
             + nid
@@ -50,24 +52,20 @@ var get_district_data = function(callback){
             + unit
             + '"}}}]';
 
-        var district_rank_url = 'https://q.nqminds.com/v1/datasets/'
-            + datasetId
-            + '/aggregate?access_token=' + accessToken + '&pipeline=[{"$match":{"$and":[{"Contract":"Excess"},{"SID":"'
+        var district_rank_query = 'pipeline=[{"$match":{"$and":[{"Contract":"Excess"},{"SID":"'
             + sid
             + '"}]}},{"$group":{"_id":{"HWRC":"$HWRC","NID":"$NID"},"Values":{"$sum":"$'
             + unit
             + '"}}},{"$group":{"_id":"null","All_Values":{"$push":"$Values"}}}]';
 
 
-        $.ajax(district_data_url).done(function (res) {
+        $.ajax("/privateQuery/" + datasetId + "/" + command + "/" + district_data_query).done(function(res){
 
             var values = res.data;
 
-            $.ajax(district_rank_url).done(function (res) {
+            $.ajax("/privateQuery/" + datasetId + "/" + command + "/" + district_rank_query).done(function (res) {
 
                 var ranks = res.data[0].All_Values.sort(function(a,b){return a - b});
-
-
 
                 //remove 0s from ranks array
                 while (ranks[0] == 0) {
@@ -112,13 +110,12 @@ var get_nid_data = function(callback){
     } else {
 
         var datasetId =  window.location.pathname.split("/")[window.location.pathname.split("/").length-1];
+        var command = "aggregate";
 
         //var unit = $("input[name='map_data_group']:checked").val();
         var unit = "Cost";
 
-        var total_cost_url = 'https://q.nqminds.com/v1/datasets/'
-            + datasetId
-            + '/aggregate?access_token=' + accessToken + '&pipeline=[{"$match":{"$and":[{"SID":"'
+        var total_cost_query = 'pipeline=[{"$match":{"$and":[{"SID":"'
             + sid
             + '"},{"NID":"'
             + nid
@@ -126,20 +123,18 @@ var get_nid_data = function(callback){
             + unit
             + '"}}}]';
 
-        var cost_rank_url = 'https://q.nqminds.com/v1/datasets/'
-            + datasetId
-            + '/aggregate?access_token=' + accessToken + '&pipeline=[{"$match":{"$and":[{"SID":"'
+        var cost_rank_query = 'pipeline=[{"$match":{"$and":[{"SID":"'
             + sid
             + '"}]}},{"$group":{"_id":{"NID":"$NID"},"Values":{"$sum":"$'
             + unit
             + '"}}},{"$group":{"_id":"null","All_Values":{"$push":"$Values"}}}]';
 
 
-        $.ajax(total_cost_url).done(function (res) {
+        $.ajax("/privateQuery/" + datasetId + "/" + command + "/" + total_cost_query).done(function (res) {
 
             var total_cost = res.data[0].Total_Cost;
 
-            $.ajax(cost_rank_url).done(function (res) {
+            $.ajax("/privateQuery/" + datasetId + "/" + command + "/" + cost_rank_query).done(function (res) {
 
                 var ranks = res.data[0].All_Values.sort(function(a,b){return a - b});
 
@@ -199,6 +194,7 @@ var get_nid_data = function(callback){
 //        })
 //    }
 //};
+
 var get_hwrc_data = function(callback){
 
     var sid = $("#sid_map_select").val();
@@ -212,13 +208,12 @@ var get_hwrc_data = function(callback){
     } else {
 
         var datasetId =  window.location.pathname.split("/")[window.location.pathname.split("/").length-1];
+        var command = "aggregate";
 
         //var unit = $("input[name='map_data_group']:checked").val();
         var unit = "Cost"
 
-        var data_url = 'https://q.nqminds.com/v1/datasets/'
-            + datasetId
-            + '/aggregate?access_token=' + accessToken + '&pipeline=[{"$match":{"$and":[{"Contract":{"$ne":"Excess"}},{"SID":"'
+        var data_query = 'pipeline=[{"$match":{"$and":[{"Contract":{"$ne":"Excess"}},{"SID":"'
             + sid
             + '"},{"NID":"'
             + nid
@@ -226,9 +221,7 @@ var get_hwrc_data = function(callback){
             + unit
             + '"}}}]';
 
-        var max_url = 'https://q.nqminds.com/v1/datasets/'
-            + datasetId
-            + '/aggregate?access_token=' + accessToken + '&pipeline=[{"$match":{"$and":[{"Contract":{"$ne":"Excess"}},{"SID":"'
+        var max_query = 'pipeline=[{"$match":{"$and":[{"Contract":{"$ne":"Excess"}},{"SID":"'
             + sid
             + '"}]}},{"$group":{"_id":null,"Max":{"$max":"$'
             + unit
@@ -237,12 +230,11 @@ var get_hwrc_data = function(callback){
         //console.log(data_url)
         //console.log(max_url)
 
-
-        $.ajax(data_url).done(function (res) {
+        $.ajax("/privateQuery/" + datasetId + "/" + command + "/" + data_query).done(function (res) {
 
             var values = res.data;
 
-            $.ajax(max_url).done(function (res) {
+            $.ajax("/privateQuery/" + datasetId + "/" + command + "/" + max_query).done(function (res) {
 
                 var max = res.data[0].Max;
 
@@ -269,7 +261,7 @@ var get_hwrc_data = function(callback){
 
 var call_wasteMap = function(data){
 
-    var datasetId =  window.location.pathname.split("/")[window.location.pathname.split("/").length-1];
+    //var datasetId =  window.location.pathname.split("/")[window.location.pathname.split("/").length-1];
 
     wasteMap = new WasteMap("wasteMap1", "#mapContainer", data)
 
