@@ -24,3 +24,18 @@ html, body {
   margin-left: 50%;
 }
 
+
+#finish{
+
+  margin-left: 10px;
+
+}
+
+.warningTxt {
+  color: red;
+  font-weight: bold;
+}
+
+.warningBtn {
+  background-color: red;
+}

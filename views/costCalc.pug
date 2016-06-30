@@ -2,13 +2,30 @@ extends ./layout.pug
 block content
 
     script.
+        var restartCalc = function () {
+            $.ajax("/finish-calc").done(function () {
+                window.location = "/cost-calc"
+            })
+        }
+
+    script.
         $(function () {
 
             setInterval(function() {
 
                 $.ajax("/progress").done(function (res) {
 
-                    if(res == "done"){
+                    //console.log(res)
+
+                    if(res == "error"){
+
+                        alert('Calculations Failed To Finish. Click "save" to finish calculations.')
+
+                        window.location = "/settings"
+                    }
+
+
+                    if(res == "done") {
                         window.location = "/"
                     } else {
                         var width = res.loaded + "%"
@@ -36,5 +53,9 @@ block content
                 .determinate#progressBar(style='width: 0%')
 
     .row
-         h5#progress costs starting...
-         h3#loaded
+        h5#progress costs starting...
+        h3#loaded
+
+    .row
+    //.row
+    //    a.waves-effect.waves-light.btn(onclick='restartCalc()') Restart Calculations
