@@ -98,8 +98,8 @@
   app.route("/cost-calc")
       .get(ensureAuthenticated(), function(req,res) { res.render("costCalc", {progress: "wait"});})
 
-  app.route("/finish-calc")
-      .get(ensureAuthenticated(), costUpload.finish);
+  // app.route("/finish-calc")
+      // .get(ensureAuthenticated(), costUpload.finish);
 
 
   //Cost output dataset calculation handling
