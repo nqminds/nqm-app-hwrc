@@ -22,10 +22,15 @@ block content
   script.
     var accessToken = !{JSON.stringify(accessToken)};
 
+    var tableData = !{JSON.stringify(data)}
+
   script.
     $(function() {
       $(".aggregateRow").click(function() {
-        alert("clicked row " + this.dataset.field);
+        //alert("clicked row " + this.dataset.field);
+
+        table_set_nid(this.dataset.field, tableData)
+
       });
 
       $('#filter_form').on('submit', function (res) {
@@ -52,9 +57,54 @@ block content
       $("#csvButton").click(function() {
         window.location.href = window.location.origin + window.location.pathname + "/csv" + window.location.search;
       });
+
+       $("#setNID").click(function() {
+       //set the filter nid to this value
+        $("#nid_select").val([$("#nid_map_select").val()]);
+        $('select').material_select();
+
+        generate_url();
+        return false;
+
+      });
+
+      $("#addNID").click(function() {
+        //add this value to the nid filter
+        var val = $("#nid_map_select").val()
+        $('#nid_select option').each(function() {
+            if($(this).val() == val) {
+                $(this).prop("selected", true);
+            }
+        });
+
+        $('select').material_select();
+        return false;
+
+      });
+
+      $(".clearBtn").click(function(){
+        var id = "#" + this.id.split("_")[0] + "_select"
+        $(id).val([])
+        $('select').material_select();
+      })
+
+
+
     });
 
 
+
+
+
+
+            // Modal Structure
+     //#filterModal.modal
+        .modal-content
+        a.modal-action.modal-close.waves-effect.waves-green.btn-flat(href='#!') Close
+        h4 Update Filter
+        #filterModalContainer
+        .modal-footer
+        a.modal-action.modal-close.waves-effect.waves-green.btn-flat(href='#!') Close
 
 
   .row
@@ -84,30 +134,40 @@ block content
 
         .row Filters:
         .row
-          .input-field.col.s2
+          .input-field.col.s2              
             select(multiple='')#sid_select
-              option(value='', disabled='', selected='') Choose year
+              option(value='', disabled='', selected='') Choose year                  
             label SID
+                a.btn-small.waves-effect.waves-light.clearBtn#sid_clear x
+
           .input-field.col.s2
             select(multiple='')#nid_select
               option(value='', disabled='', selected='') Choose network
             label NID
+                 a.btn-small.waves-effect.waves-light.clearBtn#nid_clear x
+
           .input-field.col.s2
             select(multiple='')#hwrc_select
               option(value='', disabled='', selected='') Choose hwrc
             label HWRC
+                a.btn-small.waves-effect.waves-light.clearBtn#hwrc_clear x
+
           .input-field.col.s2
             select(multiple='')#waste_select
               option(value='', disabled='', selected='') Choose waste type
             label Waste Type
+                a.btn-small.waves-effect.waves-light.clearBtn#waste_clear x
+
           .input-field.col.s2
             select(multiple='')#move_select
               option(value='', disabled='', selected='') Choose first movement
             label First Movement
+                a.btn-small.waves-effect.waves-light.clearBtn#move_clear x
           .input-field.col.s2
             select(multiple='')#contract_select
               option(value='', disabled='', selected='') Choose contract type
             label Contract
+                a.btn-small.waves-effect.waves-light.clearBtn#contract_clear x
 
         .row Columns:
         .row
@@ -209,6 +269,9 @@ block content
             select#nid_map_select
               //option(value='', disabled='', selected='') Choose network
             label Close HWRC
+          a#setNID.waves-effect.waves-light.btn.mapBtn Set HWRC filter list
+          a#addNID.waves-effect.waves-light.btn.mapBtn Add to HWRC filter list
+
         //.row
           //.col.s1
           //  input#tonnage_map_radio(name='map_data_group',value='Tonnage', type='radio')
@@ -232,5 +295,8 @@ block content
 
       .row
         .col.s4#mapContainer
+
+
+
 
 

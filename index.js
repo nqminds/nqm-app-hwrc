@@ -23,8 +23,6 @@
 
 
 
-
-
   // Configure the local strategy for use by Passport.
   //
   // The local strategy require a `verify` function which receives the credentials
@@ -72,7 +70,8 @@
   app.get("/", ensureAuthenticated(), function(req, res) {
     // Redirect to model view if datasets are available,
     // otherwise redirect to settings.
-    if (req.session.outputDS && req.session.costDS) {
+      if (req.session.outputDS && req.session.costDS) {
+
       res.redirect(util.format('/model/%s?pipeline=[]', req.session.outputDS));
     } else {
       res.redirect("/settings");
@@ -108,12 +107,13 @@
 
   //query private dataset
   //app.get("/query/:datasetId/:method/:filter/:projection/:options", function(req, res){
-  app.get("/privateQuery/:datasetId/:command/:qString", function(req, res){
+  app.get("/privateQuery/:datasetId/:command/:qString/:cache", function (req, res) {
 
     var datasetId = req.params["datasetId"];
     var command = req.params["command"];
     var qString = req.params["qString"];
-    var accessToken = req.user
+    var cache = req.params["cache"]; 
+    var accessToken = req.user;
 
     //console.log(req.params["datasetId"] )
     //console.log(req.params["command"] )
@@ -123,6 +123,21 @@
         "/v1/datasets/" + datasetId + "/" +
         command + "?" + "access_token=" +  accessToken + "&" +
         qString;
+    
+    //if the session does not have a query cache create one
+    if (!req.session.hasOwnProperty("privateQueryList")) {
+        req.session.privateQueryList = {};
+    }
+
+    //console.log(req.session.privateQueryList) 
+
+    
+    //if the query has been cached, send the cached data
+    if (req.session.privateQueryList.hasOwnProperty(query)) {
+        console.log("using cached query:")// + query)
+        return res.status(200).json(req.session.privateQueryList[query])
+    };
+
 
     //console.log(query)
 
@@ -133,6 +148,12 @@
         console.log(err)
       } else {
         //console.log(body)
+        //cache the query response if it is less than 1000 documents
+          if (cache) {
+              console.log("caching query: ")// + query)
+              req.session.privateQueryList[query] = body;
+              //console.log("privateQuery cache length: " + req.session.privateQueryList.length);
+        }
         res.status(200).json(body)
       }
 

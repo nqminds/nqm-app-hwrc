@@ -7,7 +7,7 @@ var build_boundary_url = function(boundary_datasetId, callback){
 
     var excess_query = 'filter={"Contract":"Excess"}&key=HWRC';
 
-    $.ajax("/privateQuery/" + datasetId + "/" + command + "/" + excess_query).done(function(res){
+    $.ajax("/privateQuery/" + datasetId + "/" + command + "/" + excess_query + "/true").done(function(res){
 
         //build the boundary url
         var boundaryUrl = 'https://q.nqminds.com/v1/datasets/' + boundary_datasetId + '/data?filter={"$or":[';
@@ -59,11 +59,11 @@ var get_district_data = function(callback){
             + '"}}},{"$group":{"_id":"null","All_Values":{"$push":"$Values"}}}]';
 
 
-        $.ajax("/privateQuery/" + datasetId + "/" + command + "/" + district_data_query).done(function(res){
+        $.ajax("/privateQuery/" + datasetId + "/" + command + "/" + district_data_query + "/false").done(function(res){
 
             var values = res.data;
 
-            $.ajax("/privateQuery/" + datasetId + "/" + command + "/" + district_rank_query).done(function (res) {
+            $.ajax("/privateQuery/" + datasetId + "/" + command + "/" + district_rank_query + "/false").done(function (res) {
 
                 var ranks = res.data[0].All_Values.sort(function(a,b){return a - b});
 
@@ -130,11 +130,11 @@ var get_nid_data = function(callback){
             + '"}}},{"$group":{"_id":"null","All_Values":{"$push":"$Values"}}}]';
 
 
-        $.ajax("/privateQuery/" + datasetId + "/" + command + "/" + total_cost_query).done(function (res) {
+        $.ajax("/privateQuery/" + datasetId + "/" + command + "/" + total_cost_query + "/false").done(function (res) {
 
             var total_cost = res.data[0].Total_Cost;
 
-            $.ajax("/privateQuery/" + datasetId + "/" + command + "/" + cost_rank_query).done(function (res) {
+            $.ajax("/privateQuery/" + datasetId + "/" + command + "/" + cost_rank_query + "/false").done(function (res) {
 
                 var ranks = res.data[0].All_Values.sort(function(a,b){return a - b});
 
@@ -149,51 +149,6 @@ var get_nid_data = function(callback){
 
 };
 
-//var get_hwrc_data = function(callback){
-//
-//    var sid = $("#sid_map_select").val();
-//    var nid = $("#nid_map_select").val();
-//
-//    //if(sid == null){sid = "2015"}
-//    //if(nid == null){nid = "11111111111111111111111111"}
-//
-//    if(sid == null || nid == null){
-//        callback([])
-//    } else {
-//
-//        var datasetId = $("#dataset_id").val();
-//
-//        var unit = $("input[name='map_data_group']:checked").val();
-//
-//        var data_url = 'https://q.nqminds.com/v1/datasets/'
-//            + datasetId
-//            + '/aggregate?pipeline=[{"$match":{"$and":[{"Contract":{"$ne":"Excess"}},{"SID":"'
-//            + sid
-//            + '"},{"NID":"'
-//            + nid
-//            + '"}]}},{"$group":{"_id":{"HWRC":"$HWRC"},"Value":{"$sum":"$'
-//            + unit
-//            + '"}}}]';
-//
-//        //console.log(data_url)
-//
-//        $.ajax(data_url).done(function (res) {
-//
-//            var values = res.data;
-//            var data = [];
-//            for (var value_index = 0; value_index < values.length; value_index++) {
-//
-//                var entity = values[value_index]._id.HWRC;
-//                var value = values[value_index].Value;
-//                data.push({id: entity, val: value});
-//
-//            }
-//
-//            callback(data);
-//
-//        })
-//    }
-//};
 
 var get_hwrc_data = function(callback){
 
@@ -230,11 +185,11 @@ var get_hwrc_data = function(callback){
         //console.log(data_url)
         //console.log(max_url)
 
-        $.ajax("/privateQuery/" + datasetId + "/" + command + "/" + data_query).done(function (res) {
+        $.ajax("/privateQuery/" + datasetId + "/" + command + "/" + data_query + "/false").done(function (res) {
 
             var values = res.data;
 
-            $.ajax("/privateQuery/" + datasetId + "/" + command + "/" + max_query).done(function (res) {
+            $.ajax("/privateQuery/" + datasetId + "/" + command + "/" + max_query + "/false").done(function (res) {
 
                 var max = res.data[0].Max;
 

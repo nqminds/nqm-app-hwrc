@@ -75,7 +75,7 @@ var populate_select = function(options_index, oOptions, callback){
 
     var qString = "key=" + oOptions[options_index].key;
 
-    $.ajax("/privateQuery/" + datasetId + "/" + command + "/" + qString).done(function (res) {
+    $.ajax("/privateQuery/" + datasetId + "/" + command + "/" + qString + "/true").done(function (res) {
 
     //$.ajax("https://q.nqminds.com/v1/datasets/" + dataset + "/distinct?access_token=" + accessToken + "&key=" + oOptions[options_index].key).done(function(res){
 
@@ -110,7 +110,7 @@ var populate_select = function(options_index, oOptions, callback){
 
 var populate_filter_form1 = function(){
 
-
+  
     //populate options
     next_select(0, oOptions, function(res){
         populate_filter_form2(oOptions)
@@ -334,7 +334,14 @@ var populate_map_form = function(){
 
     //populate options
 
-    next_select(0, oMapOptions, function(res){
+    next_select(0, oMapOptions, function (res) {
+
+        
+        if ($("#nid_select").val().length == 0) {
+            $("#nid_map_select").val("11111111111111111111111111")
+        } else {
+            $("#nid_select").val()[0]
+        }
 
         get_district_data(function(districtData, districtRanks){
             get_hwrc_data(function(poiData, poiMax){
@@ -378,17 +385,37 @@ var update_map_nid = function(bit_index){
             get_nid_data(function(total_cost, rank, ranks_count){
                 ee.emitEvent("update_map_text", [total_cost, rank, ranks_count])
             });
-
-
         }
-
-
     }
-
-
-
-
 };
+
+//var table_set_nid = function (row, obj) {
+
+//    console.log(row)
+//    console.log(obj.data[row]._id)
+
+//    $("#filterModalContainer").empty()
+
+    
+
+//    for (key in obj.data[row]._id) {
+//        console.log(obj.data[row]._id[key])
+
+//        var html = "<br><h5>" + key + "</h5>" + 
+//            "<p>" + obj.data[row]._id[key] + "</p>" +
+//            "<a onclick='f()', class='waves-effect waves-light btn modalBtn " + key + "_add'>add</a>" +
+//            "<a class='waves-effect waves-light btn modalBtn" + key + "_set'>set</a>" +
+//            "<hr>"
+
+//        $("#filterModalContainer").append(html)
+
+//    }
+
+//    $('#filterModal').openModal();
+
+//    //get the column
+
+//};
 
 ee.addListener("update_map_nid", update_map_nid);
 

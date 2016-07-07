@@ -39,3 +39,20 @@ html, body {
 .warningBtn {
   background-color: red;
 }
+
+.mapBtn {
+    margin: 10px;
+    opacity: 0.5;
+}
+
+.clearBtn {
+    margin-left: 10px;
+}
+
+.modalBtn {
+    margin-right: 10px;
+}
+
+#filterModal {
+    padding: 10px;
+}
