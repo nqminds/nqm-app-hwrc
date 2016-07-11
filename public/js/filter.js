@@ -389,33 +389,17 @@ var update_map_nid = function(bit_index){
     }
 };
 
-//var table_set_nid = function (row, obj) {
+var table_set_nid = function (row, obj) {
 
-//    console.log(row)
-//    console.log(obj.data[row]._id)
+    console.log(row)
+    console.log(obj.data[row]._id)
 
-//    $("#filterModalContainer").empty()
 
-    
 
-//    for (key in obj.data[row]._id) {
-//        console.log(obj.data[row]._id[key])
 
-//        var html = "<br><h5>" + key + "</h5>" + 
-//            "<p>" + obj.data[row]._id[key] + "</p>" +
-//            "<a onclick='f()', class='waves-effect waves-light btn modalBtn " + key + "_add'>add</a>" +
-//            "<a class='waves-effect waves-light btn modalBtn" + key + "_set'>set</a>" +
-//            "<hr>"
+    //get the column
 
-//        $("#filterModalContainer").append(html)
-
-//    }
-
-//    $('#filterModal').openModal();
-
-//    //get the column
-
-//};
+};
 
 ee.addListener("update_map_nid", update_map_nid);
 

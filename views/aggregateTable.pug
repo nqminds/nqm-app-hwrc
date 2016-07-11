@@ -24,6 +24,12 @@ block content
 
     var tableData = !{JSON.stringify(data)}
 
+  script(src="/js/CheckList.js")
+  script(src="/js/filter.js")
+  script(src="/js/d3-components.js")
+  script(src="/js/widgets.js")
+  script(src="/js/initMap.js")
+
   script.
     $(function() {
       $(".aggregateRow").click(function() {
@@ -97,14 +103,6 @@ block content
 
 
 
-            // Modal Structure
-     //#filterModal.modal
-        .modal-content
-        a.modal-action.modal-close.waves-effect.waves-green.btn-flat(href='#!') Close
-        h4 Update Filter
-        #filterModalContainer
-        .modal-footer
-        a.modal-action.modal-close.waves-effect.waves-green.btn-flat(href='#!') Close
 
 
   .row

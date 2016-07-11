@@ -59,11 +59,11 @@ var get_district_data = function(callback){
             + '"}}},{"$group":{"_id":"null","All_Values":{"$push":"$Values"}}}]';
 
 
-        $.ajax("/privateQuery/" + datasetId + "/" + command + "/" + district_data_query + "/false").done(function(res){
+        $.ajax("/privateQuery/" + datasetId + "/" + command + "/" + district_data_query + "/true").done(function(res){
 
             var values = res.data;
 
-            $.ajax("/privateQuery/" + datasetId + "/" + command + "/" + district_rank_query + "/false").done(function (res) {
+            $.ajax("/privateQuery/" + datasetId + "/" + command + "/" + district_rank_query + "/true").done(function (res) {
 
                 var ranks = res.data[0].All_Values.sort(function(a,b){return a - b});
 
@@ -105,7 +105,8 @@ var get_nid_data = function(callback){
     //if(sid == null){sid = "2015"}
     //if(nid == null){nid = "11111111111111111111111111"}
 
-    if(sid == null || nid == null){
+    if (sid == null || nid == null) {
+        "/true"
         callback([])
     } else {
 
@@ -130,11 +131,11 @@ var get_nid_data = function(callback){
             + '"}}},{"$group":{"_id":"null","All_Values":{"$push":"$Values"}}}]';
 
 
-        $.ajax("/privateQuery/" + datasetId + "/" + command + "/" + total_cost_query + "/false").done(function (res) {
+        $.ajax("/privateQuery/" + datasetId + "/" + command + "/" + total_cost_query + "/true").done(function (res) {
 
             var total_cost = res.data[0].Total_Cost;
 
-            $.ajax("/privateQuery/" + datasetId + "/" + command + "/" + cost_rank_query + "/false").done(function (res) {
+            $.ajax("/privateQuery/" + datasetId + "/" + command + "/" + cost_rank_query + "/true").done(function (res) {
 
                 var ranks = res.data[0].All_Values.sort(function(a,b){return a - b});
 
@@ -185,11 +186,11 @@ var get_hwrc_data = function(callback){
         //console.log(data_url)
         //console.log(max_url)
 
-        $.ajax("/privateQuery/" + datasetId + "/" + command + "/" + data_query + "/false").done(function (res) {
+        $.ajax("/privateQuery/" + datasetId + "/" + command + "/" + data_query + "/true").done(function (res) {
 
             var values = res.data;
 
-            $.ajax("/privateQuery/" + datasetId + "/" + command + "/" + max_query + "/false").done(function (res) {
+            $.ajax("/privateQuery/" + datasetId + "/" + command + "/" + max_query + "/true").done(function (res) {
 
                 var max = res.data[0].Max;
 
