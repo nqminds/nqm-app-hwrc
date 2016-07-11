@@ -1,2 +1,0 @@
-C:\dev\nqm-app-hwrc\bin\Microsoft.NodejsTools.WebRole.dll
-C:\dev\nqm-app-hwrc\obj\Debug\nqm-app-hwrc.njsprojResolveAssemblyReference.cache
