@@ -4,7 +4,11 @@
   "RCLookupResourceId": "S1lWjFHVV",
   "baseQueryURL": "https://q.nqminds.com",
   "baseCommandURL": "https://cmd.nqminds.com",
-  "outputDatasetSchema": "dataset",
+  "outputDatasetSchema": "HccWasteOutputCost",
   "costDatasetSchema": "HccWasteCost",
-  "accessTokenTTL": 3600
+  "tonnageDataset":"H1eCZDVWr",
+  "nidDataset":"rkx-QLiEQ",
+
+  "accessTokenTTL": 864000
+
 }

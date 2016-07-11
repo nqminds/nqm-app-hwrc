@@ -20,9 +20,23 @@ block rightNavMenuMobile
 
 block content
   script.
+    var accessToken = !{JSON.stringify(accessToken)};
+
+    var tableData = !{JSON.stringify(data)}
+
+  script(src="/js/CheckList.js")
+  script(src="/js/filter.js")
+  script(src="/js/d3-components.js")
+  script(src="/js/widgets.js")
+  script(src="/js/initMap.js")
+
+  script.
     $(function() {
       $(".aggregateRow").click(function() {
-        alert("clicked row " + this.dataset.field);
+        //alert("clicked row " + this.dataset.field);
+
+        table_set_nid(this.dataset.field, tableData)
+
       });
 
       $('#filter_form').on('submit', function (res) {
@@ -49,58 +63,109 @@ block content
       $("#csvButton").click(function() {
         window.location.href = window.location.origin + window.location.pathname + "/csv" + window.location.search;
       });
+
+       $("#setNID").click(function() {
+       //set the filter nid to this value
+        $("#nid_select").val([$("#nid_map_select").val()]);
+        $('select').material_select();
+
+        generate_url();
+        return false;
+
+      });
+
+      $("#addNID").click(function() {
+        //add this value to the nid filter
+        var val = $("#nid_map_select").val()
+        $('#nid_select option').each(function() {
+            if($(this).val() == val) {
+                $(this).prop("selected", true);
+            }
+        });
+
+        $('select').material_select();
+        return false;
+
+      });
+
+      $(".clearBtn").click(function(){
+        var id = "#" + this.id.split("_")[0] + "_select"
+        $(id).val([])
+        $('select').material_select();
+      })
+
+
+
     });
+
+
+
+
+
+
+
 
   .row
     .col.s12
       ul.tabs
         li.tab.col.s3
-          a(href="#filter")
-            i.material-icons.hwrc-tab-icon filter_list
-            | filter
-        li.tab.col.s3
           a(href="#grid")
             i.material-icons.hwrc-tab-icon grid_on
             | grid
+        li.tab.col.s3
+          a(href="#filter")
+            i.material-icons.hwrc-tab-icon filter_list
+            | filter
         li.tab.col.s3
           a(href="#map")
             i.material-icons.hwrc-tab-icon place
             | map
     .col.s12#filter
       form#filter_form
+
         .row
-        .row Dataset:
-        .row
-          .input-field.col.s2
-            input#dataset_id.validate(value='SkgFcSoEX', type='text')
-            label(for='dataset_id') dataset Id
+        //.row Dataset:
+        //.row
+        //  .input-field.col.s2
+        //    input#dataset_id.validate(value='', type='text')
+        //    label(for='dataset_id') dataset Id
 
         .row Filters:
         .row
-          .input-field.col.s2
+          .input-field.col.s2              
             select(multiple='')#sid_select
-              option(value='', disabled='', selected='') Choose year
+              option(value='', disabled='', selected='') Choose year                  
             label SID
+                a.btn-small.waves-effect.waves-light.clearBtn#sid_clear x
+
           .input-field.col.s2
             select(multiple='')#nid_select
               option(value='', disabled='', selected='') Choose network
             label NID
+                 a.btn-small.waves-effect.waves-light.clearBtn#nid_clear x
+
           .input-field.col.s2
             select(multiple='')#hwrc_select
               option(value='', disabled='', selected='') Choose hwrc
             label HWRC
+                a.btn-small.waves-effect.waves-light.clearBtn#hwrc_clear x
+
           .input-field.col.s2
             select(multiple='')#waste_select
               option(value='', disabled='', selected='') Choose waste type
             label Waste Type
+                a.btn-small.waves-effect.waves-light.clearBtn#waste_clear x
+
           .input-field.col.s2
             select(multiple='')#move_select
               option(value='', disabled='', selected='') Choose first movement
             label First Movement
+                a.btn-small.waves-effect.waves-light.clearBtn#move_clear x
           .input-field.col.s2
             select(multiple='')#contract_select
               option(value='', disabled='', selected='') Choose contract type
             label Contract
+                a.btn-small.waves-effect.waves-light.clearBtn#contract_clear x
 
         .row Columns:
         .row
@@ -123,6 +188,7 @@ block content
             input#contract-box.filled-in(type='checkbox')
             label(for='contract-box').check_space Contract
 
+        .row Data
         .row
           .col.s2
             input#tonnage-box.filled-in(type='checkbox')
@@ -137,6 +203,7 @@ block content
             input#delta_cost-box.filled-in(type='checkbox')
             label(for='delta_cost-box').check_space Delta Cost
 
+        .row Displaced data
         .row
           .col.s2
             input#winter-box.filled-in(type='checkbox')
@@ -172,21 +239,21 @@ block content
         thead
           tr
             //- Add a header for each column.
-            each column in columns
+            each column in data.columns
               th(data-field=column.key)
                 a(href=column.sortURL) #{column.title}
                   i.right.material-icons #{column.sortIcon}
         tbody
           //- Add a row for each data item.
-          each row in data
+          each row in data.data
             tr.aggregateRow(data-field=row.__idx)
               //- Within the row, add a cell for each column heading.
-              each column in columns
+              each column in data.columns
                 //- Use Array.reduce to lookup the json path, e.g. evaluate row["_id.SID"]
                 td= column.key.split(".").reduce(function(obj, key) { return obj[key] }, row)
       .row
         .col.s12
-          if data.length > 0
+          if data.data.length > 0
             a(href="#").btn.right#csvButton download csv
 
     .col.s12#map
@@ -200,6 +267,9 @@ block content
             select#nid_map_select
               //option(value='', disabled='', selected='') Choose network
             label Close HWRC
+          a#setNID.waves-effect.waves-light.btn.mapBtn Set HWRC filter list
+          a#addNID.waves-effect.waves-light.btn.mapBtn Add to HWRC filter list
+
         //.row
           //.col.s1
           //  input#tonnage_map_radio(name='map_data_group',value='Tonnage', type='radio')
@@ -223,5 +293,8 @@ block content
 
       .row
         .col.s4#mapContainer
+
+
+
 
 

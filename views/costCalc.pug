@@ -1,0 +1,61 @@
+extends ./layout.pug
+block content
+
+    script.
+        var restartCalc = function () {
+            $.ajax("/finish-calc").done(function () {
+                window.location = "/cost-calc"
+            })
+        }
+
+    script.
+        $(function () {
+
+            setInterval(function() {
+
+                $.ajax("/progress").done(function (res) {
+
+                    //console.log(res)
+
+                    if(res == "error"){
+
+                        alert('Calculations Failed To Finish. Click "save" to finish calculations.')
+
+                        window.location = "/settings"
+                    }
+
+
+                    if(res == "done") {
+                        window.location = "/"
+                    } else {
+                        var width = res.loaded + "%"
+                        $("#progress").text(res.progressString)
+                        $("#loaded").text(res.loadedString)
+                        $("#progressBar").css('width', width)
+                        $("#progressIcon").css('margin-left', width)
+                    }
+
+                })
+
+            }, 2000);
+
+        });
+
+    .row
+
+    .row
+            i.large.material-icons#progressIcon(style='margin-left: 0%')  local_shipping
+
+
+    .row
+        .col.s12
+            .progress
+                .determinate#progressBar(style='width: 0%')
+
+    .row
+        h5#progress costs starting...
+        h3#loaded
+
+    .row
+    //.row
+    //    a.waves-effect.waves-light.btn(onclick='restartCalc()') Restart Calculations

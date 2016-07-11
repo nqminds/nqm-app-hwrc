@@ -17,6 +17,7 @@ CheckList.prototype._check = function(variable, res){
 
 
         if(this.check_list[i].variable == variable){
+
             this.check_list[i].check = true;
             this.data[variable] = res;
         }
