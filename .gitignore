@@ -32,7 +32,15 @@ node_modules
 # Optional REPL history
 .node_repl_history
 
-#visual studio
+# visual studio
 *.njsproj
 *.sln
-.vscode
+.vscode/
+obj
+
+# bin
+bin
+
+#intelij
+.idea/
+
