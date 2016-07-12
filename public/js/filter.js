@@ -70,33 +70,39 @@ var next_select = function(options_index, oOptions, callback){
 
 var populate_select = function(options_index, oOptions, callback){
 
-    var path = window.location.pathname;
+    var datasetId = window.location.pathname.split("/")[window.location.pathname.split("/").length-1];
+    var command = "distinct"
 
-        $.ajax("https://q.nqminds.com/v1/datasets" + path + "distinct?key=" + oOptions[options_index].key).done(function(res){
+    var qString = "key=" + oOptions[options_index].key;
 
-            for(var data_index in res.data){
+    $.ajax("/privateQuery/" + datasetId + "/" + command + "/" + qString + "/true").done(function (res) {
 
-                var value = res.data[data_index];
-                var text = res.data[data_index];
+    //$.ajax("https://q.nqminds.com/v1/datasets/" + dataset + "/distinct?access_token=" + accessToken + "&key=" + oOptions[options_index].key).done(function(res){
 
-                //replace nid with names
-                if(oOptions[options_index].key=="NID"){
+        for(var data_index in res.data){
 
-                    text = "";
-                     for (var i = 0; i < value.length; i++) {
-                        if(value[i] == "0"){
-                            text += hwrcLookup[i].HWRC + ", "
-                        }
+            var value = res.data[data_index];
+            var text = res.data[data_index];
+
+            //replace nid with names
+            if(oOptions[options_index].key=="NID"){
+
+                text = "";
+                 for (var i = 0; i < value.length; i++) {
+                    if(value[i] == "0"){
+                        text += hwrcLookup[i].HWRC + ", "
                     }
-                    if(text.length > 0){
-                        text = text.slice(0, -2)
-                    }
-                    text = "(" + text + ")"
                 }
-
-                $(oOptions[options_index].id).append($('<option>', {value: value,  text: text}))
+                if(text.length > 0){
+                    text = text.slice(0, -2)
+                }
+                text = "(" + text + ")"
             }
-            callback(options_index, oOptions)
+
+            $(oOptions[options_index].id).append($('<option>', {value: value,  text: text}))
+        }
+        $('select').material_select();
+        callback(options_index, oOptions)
 
     })
 };
@@ -104,8 +110,8 @@ var populate_select = function(options_index, oOptions, callback){
 
 var populate_filter_form1 = function(){
 
+  
     //populate options
-
     next_select(0, oOptions, function(res){
         populate_filter_form2(oOptions)
     });
@@ -154,6 +160,8 @@ var populate_filter_form2 = function(oOptions){
     //populate option selections
     var url = window.location.href;
     var pipeline = JSON.parse(getPipeline());
+
+    //console.log("populate filter form pipeline: " + pipeline)
 
     match = get_pipeline_component("$match", pipeline)[0]["$match"];
     aMatch = flatten(match);
@@ -206,10 +214,14 @@ var generate_url = function(){
     var url = window.location.origin + window.location.pathname + '?pipeline=[';
 
 
+
     //MATCH
+    var matchFlag = false;
+
     var sMatch = '{"$match":{"$and":[';
 
     for(var options_index in oOptions){
+
         var id = oOptions[options_index].id;
         var key = oOptions[options_index].key;
 
@@ -219,14 +231,12 @@ var generate_url = function(){
 
         for(var arr_index in arr){
             subMatch += '{"' + key + '":"' + arr[arr_index] + '"},';
-            //if(arr_index < arr.length - 1){
-            //    subMatch += ','
-            //}
         }
         subMatch = subMatch.slice(0, -1);
         subMatch += ']}';
 
         if(arr.length > 0){
+            matchFlag = true;
             sMatch += subMatch + ','
         }
 
@@ -237,8 +247,15 @@ var generate_url = function(){
     sMatch = sMatch.slice(0, -1);
     sMatch += ']}},';
 
+    //hack for empty match
+    //todo deal with empty match
+    if(matchFlag == false){sMatch = '{"$match":{"$and":[{"$or":[{"SID":"2015"},{"SID":"2021"}]}]}},' }
+
+    //console.log("match: " + sMatch)
 
     //GROUP
+
+    groupFlag = false;
 
     var sGroup = '{"$group":{';
 
@@ -252,6 +269,7 @@ var generate_url = function(){
         var type = oCheck[check_index].type;
 
         if(type == "_id" && $(id).is(":checked")){
+            groupFlag = true;
             sGroup += '"' + key + '":"$' + key + '",'
         }
 
@@ -260,13 +278,19 @@ var generate_url = function(){
     sGroup = sGroup.slice(0, -1);
     sGroup += '},';
 
+    //console.log(sGroup)
+
+    if(groupFlag == false){
+        Materialize.toast('You must select at least one column!', 4000, 'filterAlert')
+    }
+
     //Sort
     var sSort = '';
 
 
-
-
     //Group Sum
+
+    sumFlag = false;
 
     for(var check_index in oCheck){
 
@@ -275,6 +299,7 @@ var generate_url = function(){
         var type = oCheck[check_index].type;
 
         if(type == "sum" && $(id).is(":checked")){
+            sumFlag = true;
             sGroup += '"' + key + '":{"$sum":"$' + key + '"},';
 
 
@@ -288,13 +313,19 @@ var generate_url = function(){
     sGroup = sGroup.slice(0, -1);
     sGroup += '}}';
 
+    if(sumFlag == false){
+        Materialize.toast('You must select at least one data type!', 4000, 'filterAlert')
+    }
+
     url += sMatch + sGroup + sSort;
 
     url += ']';
 
-    //console.log(url)
+    console.log(url)
 
-    window.open(url,"_self")
+    if(groupFlag == true && sumFlag == true) {
+        window.open(url, "_self")
+    }
 
 };
 
@@ -303,7 +334,14 @@ var populate_map_form = function(){
 
     //populate options
 
-    next_select(0, oMapOptions, function(res){
+    next_select(0, oMapOptions, function (res) {
+
+        
+        if ($("#nid_select").val().length == 0) {
+            $("#nid_map_select").val("11111111111111111111111111")
+        } else {
+            $("#nid_select").val()[0]
+        }
 
         get_district_data(function(districtData, districtRanks){
             get_hwrc_data(function(poiData, poiMax){
@@ -316,6 +354,8 @@ var populate_map_form = function(){
 };
 
 var update_map_nid = function(bit_index){
+
+    //document.getElementById("mapContainer").setAttribute("style","-webkit-filter:blur(2px)");
 
     var current_nid = $("#nid_map_select").val();
 
@@ -338,23 +378,37 @@ var update_map_nid = function(bit_index){
 
             get_district_data(function(districtData, districtRanks){
                 get_hwrc_data(function(poiData, poiMax){
+                    //document.getElementById("mapContainer").setAttribute("style","-webkit-filter:blur(none)");
                     ee.emitEvent("update_map", [districtData, districtRanks, poiData, poiMax]);
                 });
             });
             get_nid_data(function(total_cost, rank, ranks_count){
                 ee.emitEvent("update_map_text", [total_cost, rank, ranks_count])
             });
-
-
         }
-
-
     }
+};
+
+var table_set_nid = function (row, obj) {
+
+    console.log(row)
+    console.log(obj.data[row]._id)
 
 
 
+
+    //get the column
 
 };
 
 ee.addListener("update_map_nid", update_map_nid);
+
+
+ee.addListener("update_map_nid", function(){
+    document.getElementById("mapContainer").setAttribute("style","-webkit-filter:blur(2px)");
+});
+ee.addListener("update_map", function(){
+    document.getElementById("mapContainer").setAttribute("style","-webkit-filter:blur(none)");
+});
+
 

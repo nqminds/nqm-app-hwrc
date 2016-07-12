@@ -240,6 +240,7 @@ d3Components.prototype._map = function(widget, configuration){
 
         poi_layer
             .data(poi)
+            //.attr(that.config.poi_class)
             .attr("id", function(d) {
                 return "#poi_" + widget.widgetId + "_" + d.properties.id})
             .transition()

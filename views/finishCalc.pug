@@ -1,0 +1,34 @@
+extends ./layout.pug
+
+block content
+    script.
+        var finishData = function(){
+            $.ajax("/finish-calc").done(function(){
+                window.location = "/cost-calc"
+            })
+        }
+        var viewData = function(){
+            window.location = '/';
+        }
+
+
+
+    div#finish
+        br
+        h3.warningTxt Warning!
+        br
+        h5 Calculations have not finished.
+        br
+        h5 Your output dataset only has #{actual.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} records
+        br
+        h5 It should have #{target.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")} records
+        br
+        .row
+            //a.waves-effect.waves-light.btn(onclick='finishData()') Finish Calculation
+            a.waves-effect.waves-light.btn.warningBtn(onclick='viewData()') View data
+
+        p You can finish the calculations at any time by returning to settings and reloading New Cost Data
+
+
+
+

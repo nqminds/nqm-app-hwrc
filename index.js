@@ -18,8 +18,16 @@
   var tdxAPI = (new (require("nqm-api-tdx"))(config));
 
   var settings = require("./lib/settings")(config, tdxAPI);
+
   var costUpload = require("./lib/costUpload")(config, tdxAPI);
+
+  //if a cache for privateQueries
+  var privateQueryList = {};
+  privateQueryList.Count = 0;
   
+
+
+
   // Configure the local strategy for use by Passport.
   //
   // The local strategy require a `verify` function which receives the credentials
@@ -27,22 +35,27 @@
   // that the password is correct and then invoke `cb` with a user object, which
   // will be set at `req.user` in route handlers after authentication.
   passport.use(new Strategy(
-    function(username, password, cb) {
+      function (username, password, cb) {
+          log("new strategy");
       tdxAPI.authenticate(username, password, cb);
     }
   ));
 
   // Configure Passport authenticated session persistence.
-  passport.serializeUser(function(user, cb) {
+  passport.serializeUser(function (user, cb) {
+      log("passort serialze user");
     // Just perist the access token.
-    process.nextTick(function() {
+      process.nextTick(function () {
+          log("persist access Token");
       cb(null, user);
     });    
   });
 
-  passport.deserializeUser(function(id, cb) {
+  passport.deserializeUser(function (id, cb) {
+      log("passort deserialze user");
     // Pass on the access token as is.
-    process.nextTick(function() {
+      process.nextTick(function () {
+          log("pass on access token");
       cb(null, id);
     });
   });
@@ -67,16 +80,23 @@
   app.get("/", ensureAuthenticated(), function(req, res) {
     // Redirect to model view if datasets are available,
     // otherwise redirect to settings.
-    if (req.session.outputDS && req.session.costDS) {
-      res.redirect(util.format("/model/%s?pipeline=[]", req.session.outputDS));
-    } else {
+      log("authenticated");
+      if (req.session.outputDS && req.session.costDS) {
+          log("request main query");
+      res.redirect(util.format('/model/%s?pipeline=[]', req.session.outputDS));
+      } else {
+          log("go to settings");
       res.redirect("/settings");
     }    
   });
 
+
   // Login route.
   app.route("/login")
-    .get(function(req,res) { res.render("login"); })
+      .get(function (req, res) {
+          log("get login...");
+          res.render("login");
+      })
     .post(bodyParser.single(), passport.authenticate("local",{ successReturnToOrRedirect: "/settings", failureRedirect: "/login" }));
 
   // Settings route.
@@ -88,6 +108,67 @@
   app.route("/cost-upload")
     .get(ensureAuthenticated(), costUpload.render)
     .post(ensureAuthenticated(), bodyParser.single("costs"), costUpload.save);
+
+  app.route("/cost-calc")
+      .get(ensureAuthenticated(), function(req,res) { res.render("costCalc", {progress: "wait"});})
+
+  // app.route("/finish-calc")
+      // .get(ensureAuthenticated(), costUpload.finish);
+
+
+  //Cost output dataset calculation handling
+  app.route("/progress")
+      .get(ensureAuthenticated(), costUpload.progress);
+
+  //query private dataset
+  //app.get("/query/:datasetId/:method/:filter/:projection/:options", function(req, res){
+  app.get("/privateQuery/:datasetId/:command/:qString/:cache", function (req, res) {
+
+
+    var datasetId = req.params["datasetId"];
+    var command = req.params["command"];
+    var qString = req.params["qString"];
+    var cache = req.params["cache"]; 
+    var accessToken = req.user;
+
+    var query = config.baseQueryURL +
+        "/v1/datasets/" + datasetId + "/" +
+        command + "?" + "access_token=" +  accessToken + "&" +
+        qString;
+    
+    
+    //if the query has been cached, send the cached data
+    if (privateQueryList.hasOwnProperty(query)) {
+        log("using cached query:")// + query)
+        return res.status(200).json(privateQueryList[query])
+    };
+
+
+    //console.log(query)
+
+    request.get(query, { json: true }, function (err, resp, body) {
+
+      if (err) {
+        res.status(400).send(err.message);
+        console.log(err)
+      } else {
+        //console.log(body)
+        //cache the query response 
+          if (cache && privateQueryList.Count < 1000) {
+
+              console.log(privateQueryList.Count)
+              privateQueryList.Count = Object.keys(privateQueryList).length;
+
+              log("caching query: ")// + query)
+              privateQueryList[query] = body;
+
+        }
+        res.status(200).json(body)
+      }
+
+    })
+
+  })
 
   // Logout route.
   app.get("/logout", function(req,res) {
@@ -115,6 +196,7 @@
       var port = argv.port || 8888;
       app.listen(port, function () {
         log("Listening on port " + port);
+        console.log("Listening on port " + port)
       });              
     }
   });
